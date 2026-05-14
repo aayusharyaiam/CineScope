@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { tmdbApi, geminiApi } from '../services/api';
+import { tmdbApi, geminiApi, GENRE_MAP } from '../services/api';
 import MovieCard from '../components/MovieCard';
 
 export default function Search() {
@@ -10,12 +10,14 @@ export default function Search() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [activeGenre, setActiveGenre] = useState(null);
 
   const executeSearch = useCallback(async (searchQuery, aiMode) => {
     if (!searchQuery.trim()) return;
     setLoading(true);
     setError(null);
     setResults([]);
+    setActiveGenre(null);
 
     try {
       if (aiMode) {
@@ -47,14 +49,39 @@ export default function Search() {
     }
   }, []);
 
-  // Auto-search when coming from Home page with ?q= param
+  const executeGenreSearch = useCallback(async (genreName) => {
+    const genreId = GENRE_MAP[genreName];
+    if (!genreId) return;
+    setLoading(true);
+    setError(null);
+    setResults([]);
+    setActiveGenre(genreName);
+    setQuery('');
+
+    try {
+      const data = await tmdbApi.discoverByGenre(genreId);
+      if (data.results) {
+        setResults(data.results);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to discover movies for this genre.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Auto-search when coming from Home page with ?q= or ?genre= param
   useEffect(() => {
     const q = searchParams.get('q');
-    if (q) {
+    const genre = searchParams.get('genre');
+    if (genre) {
+      executeGenreSearch(genre);
+    } else if (q) {
       setQuery(q);
       executeSearch(q, false);
     }
-  }, [searchParams, executeSearch]);
+  }, [searchParams, executeSearch, executeGenreSearch]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -107,6 +134,36 @@ export default function Search() {
           </button>
         </div>
       </div>
+
+      {/* Active Genre Header */}
+      {activeGenre && (
+        <div className="max-w-[1440px] mx-auto mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="material-symbols-outlined text-brand-deep-purple text-3xl">movie_filter</span>
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+              {activeGenre} Movies
+            </h2>
+            <span className="glass-panel text-xs font-bold px-3 py-1 rounded-full text-brand-coral-pink">
+              {results.length} results
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {Object.keys(GENRE_MAP).map(g => (
+              <button
+                key={g}
+                onClick={() => executeGenreSearch(g)}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95 ${
+                  activeGenre === g
+                    ? 'bg-gradient-to-r from-brand-deep-purple to-brand-coral-pink text-white shadow-lg'
+                    : 'glass-panel text-gray-700 dark:text-gray-300 hover:text-white hover:bg-brand-deep-purple/80'
+                }`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Results Section */}
       <div className="max-w-[1440px] mx-auto">

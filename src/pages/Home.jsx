@@ -7,7 +7,7 @@ import { tmdbApi, getPickOfTheDay } from '../services/api';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const genres = ['Action', 'Comedy', 'Drama', 'Sci-Fi', 'Horror', 'Romance', 'Documentary'];
+const genres = ['Action', 'Comedy', 'Drama', 'Sci-Fi', 'Horror', 'Romance', 'Documentary', 'Thriller', 'Animation', 'Fantasy', 'Mystery', 'Adventure'];
 
 export default function Home() {
   const heroRef = useRef(null);
@@ -224,7 +224,11 @@ export default function Home() {
         <h2 className="font-display text-2xl font-bold mb-6">Explore by Genre</h2>
         <div className="flex flex-wrap gap-4">
           {genres.map(genre => (
-            <button key={genre} className="glass-panel px-6 py-3 rounded-full text-gray-900 dark:text-gray-100 hover:bg-gradient-to-r hover:from-brand-deep-purple hover:to-brand-coral-pink hover:text-white hover:border-transparent transition-all duration-300 font-semibold text-sm">
+            <button 
+              key={genre} 
+              onClick={() => navigate(`/search?genre=${encodeURIComponent(genre)}`)}
+              className="glass-panel px-6 py-3 rounded-full text-gray-900 dark:text-gray-100 hover:bg-gradient-to-r hover:from-brand-deep-purple hover:to-brand-coral-pink hover:text-white hover:border-transparent transition-all duration-300 font-semibold text-sm active:scale-95"
+            >
               {genre}
             </button>
           ))}

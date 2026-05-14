@@ -370,7 +370,39 @@ export const tmdbApi = {
       console.error("TMDB API Error (getShowDetails):", error);
       return { name: 'Show Info Unavailable', overview: 'Could not fetch data.', vote_average: 0 };
     }
+  },
+
+  // Discover movies by genre
+  discoverByGenre: async (genreId, page = 1) => {
+    try {
+      return await tmdbFetch(`/discover/movie?with_genres=${genreId}&sort_by=popularity.desc&page=${page}`);
+    } catch (error) {
+      console.error("TMDB API Error (discoverByGenre):", error);
+      return { results: [] };
+    }
   }
+};
+
+// TMDB genre name → ID mapping
+export const GENRE_MAP = {
+  'Action': 28,
+  'Adventure': 12,
+  'Animation': 16,
+  'Comedy': 35,
+  'Crime': 80,
+  'Documentary': 99,
+  'Drama': 18,
+  'Family': 10751,
+  'Fantasy': 14,
+  'History': 36,
+  'Horror': 27,
+  'Music': 10402,
+  'Mystery': 9648,
+  'Romance': 10749,
+  'Sci-Fi': 878,
+  'Thriller': 53,
+  'War': 10752,
+  'Western': 37,
 };
 
 export const omdbApi = {
