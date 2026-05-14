@@ -92,7 +92,7 @@ export default function Search() {
     <div className="min-h-screen pb-20 pt-8 px-4 md:px-8">
       {/* Search Header */}
       <div className="max-w-4xl mx-auto mb-12">
-        <h1 className="font-display text-4xl md:text-5xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-brand-deep-purple to-brand-coral-pink">
+        <h1 className="font-display text-4xl md:text-5xl font-bold mb-8 text-center bg-clip-text text-transparent bg-linear-to-r from-brand-deep-purple to-brand-coral-pink">
           Find Your Next Obsession
         </h1>
         
@@ -111,7 +111,7 @@ export default function Search() {
             <button 
               type="submit" 
               disabled={loading}
-              className={`text-white px-8 py-4 rounded-full font-bold transition-all disabled:opacity-50 ${isAiMode ? 'bg-gradient-to-r from-brand-coral-pink to-brand-peach-orange shadow-[0_0_20px_rgba(255,111,145,0.4)]' : 'bg-brand-deep-purple hover:bg-brand-pink-purple'}`}
+              className={`text-white px-8 py-4 rounded-full font-bold transition-all disabled:opacity-50 ${isAiMode ? 'bg-linear-to-r from-brand-coral-pink to-brand-peach-orange shadow-[0_0_20px_rgba(255,111,145,0.4)]' : 'bg-brand-deep-purple hover:bg-brand-pink-purple'}`}
             >
               {loading ? 'Searching...' : 'Search'}
             </button>
@@ -137,7 +137,7 @@ export default function Search() {
 
       {/* Active Genre Header */}
       {activeGenre && (
-        <div className="max-w-[1440px] mx-auto mb-8">
+        <div className="max-w-360 mx-auto mb-8">
           <div className="flex items-center gap-3 mb-4">
             <span className="material-symbols-outlined text-brand-deep-purple text-3xl">movie_filter</span>
             <h2 className="font-display text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
@@ -154,7 +154,7 @@ export default function Search() {
                 onClick={() => executeGenreSearch(g)}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95 ${
                   activeGenre === g
-                    ? 'bg-gradient-to-r from-brand-deep-purple to-brand-coral-pink text-white shadow-lg'
+                    ? 'bg-linear-to-r from-brand-deep-purple to-brand-coral-pink text-white shadow-lg'
                     : 'glass-panel text-gray-700 dark:text-gray-300 hover:text-white hover:bg-brand-deep-purple/80'
                 }`}
               >
@@ -166,13 +166,13 @@ export default function Search() {
       )}
 
       {/* Results Section */}
-      <div className="max-w-[1440px] mx-auto">
+      <div className="max-w-360 mx-auto">
         {error && <p className="text-center text-brand-error mb-8">{error}</p>}
         
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 animate-pulse">
             {[...Array(10)].map((_, i) => (
-              <div key={i} className="aspect-[2/3] bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+              <div key={i} className="aspect-2/3 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
             ))}
           </div>
         ) : (

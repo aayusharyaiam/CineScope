@@ -92,14 +92,14 @@ export default function Home() {
   return (
     <div className="pb-20 md:pb-0">
       {/* Hero Section */}
-      <section className="relative h-[500px] md:h-[600px] flex items-center justify-center overflow-hidden rounded-3xl mx-4 mt-4 md:mt-0 shadow-2xl">
+      <section className="relative h-125 md:h-150 flex items-center justify-center overflow-hidden rounded-3xl mx-4 mt-4 md:mt-0 shadow-2xl">
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1600" 
             alt="Hero background" 
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-deep-purple/80 via-brand-coral-pink/60 to-brand-amber-yellow/60 mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-linear-to-r from-brand-deep-purple/80 via-brand-coral-pink/60 to-brand-amber-yellow/60 mix-blend-multiply"></div>
           <div className="absolute inset-0 bg-radial-gradient from-transparent to-[#151218]/90"></div>
         </div>
         
@@ -143,7 +143,7 @@ export default function Home() {
         </div>
         <div 
           ref={rowRef} 
-          className={`flex overflow-x-auto gap-3 pb-6 px-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${dragCursor}`}
+          className={`flex overflow-x-auto gap-3 pb-6 px-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none ${dragCursor}`}
           onMouseDown={handleMouseDown}
           onMouseLeave={handleMouseLeave}
           onMouseUp={handleMouseUp}
@@ -176,11 +176,11 @@ export default function Home() {
           <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
             <div className="flex flex-col md:flex-row">
               {/* Poster */}
-              <div className="w-full md:w-[280px] flex-shrink-0">
+              <div className="w-full md:w-70 shrink-0">
                 <img 
                   src={pickOfDay.poster} 
                   alt={pickOfDay.title} 
-                  className="w-full h-[400px] md:h-full object-cover"
+                  className="w-full h-100 md:h-full object-cover"
                 />
               </div>
               {/* Details */}
@@ -227,7 +227,7 @@ export default function Home() {
             <button 
               key={genre} 
               onClick={() => navigate(`/search?genre=${encodeURIComponent(genre)}`)}
-              className="glass-panel px-6 py-3 rounded-full text-gray-900 dark:text-gray-100 hover:bg-gradient-to-r hover:from-brand-deep-purple hover:to-brand-coral-pink hover:text-white hover:border-transparent transition-all duration-300 font-semibold text-sm active:scale-95"
+              className="glass-panel px-6 py-3 rounded-full text-gray-900 dark:text-gray-100 hover:bg-linear-to-r hover:from-brand-deep-purple hover:to-brand-coral-pink hover:text-white hover:border-transparent transition-all duration-300 font-semibold text-sm active:scale-95"
             >
               {genre}
             </button>
@@ -240,15 +240,15 @@ export default function Home() {
         <div className="flex items-end justify-between mb-8">
           <h2 className="font-display text-3xl md:text-4xl font-bold">Top Rated Masterpieces</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-auto md:h-[600px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-auto md:h-150">
           {/* Main Feature */}
-          <div className="md:col-span-2 relative rounded-2xl overflow-hidden group cursor-pointer h-[400px] md:h-full shadow-xl">
+          <div className="md:col-span-2 relative rounded-2xl overflow-hidden group cursor-pointer h-100 md:h-full shadow-xl">
             <img 
               src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=1200" 
               alt="Main Movie" 
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+            <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-8 w-full">
               <div className="flex gap-2 mb-3">
                 <span className="bg-brand-deep-purple/80 backdrop-blur-md text-white text-xs font-bold px-2 py-1 rounded">Critically Acclaimed</span>
@@ -261,13 +261,13 @@ export default function Home() {
           
           {/* Side Stack */}
           <div className="flex flex-col gap-6 h-full">
-            <div className="relative rounded-2xl overflow-hidden group cursor-pointer flex-1 h-[250px] md:h-auto shadow-xl">
+            <div className="relative rounded-2xl overflow-hidden group cursor-pointer flex-1 h-62.5 md:h-auto shadow-xl">
               <img 
                 src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&q=80&w=800" 
                 alt="Side Movie 1" 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+              <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent"></div>
               <div className="absolute bottom-0 left-0 p-5">
                 <h4 className="font-display text-xl font-bold text-white mb-1 group-hover:text-brand-deep-purple transition-colors">Whispering Pines</h4>
                 <div className="flex items-center gap-2 text-white/70 text-sm">
@@ -276,13 +276,13 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="relative rounded-2xl overflow-hidden group cursor-pointer flex-1 h-[250px] md:h-auto shadow-xl">
+            <div className="relative rounded-2xl overflow-hidden group cursor-pointer flex-1 h-62.5 md:h-auto shadow-xl">
               <img 
                 src="https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?auto=format&fit=crop&q=80&w=800" 
                 alt="Side Movie 2" 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+              <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent"></div>
               <div className="absolute bottom-0 left-0 p-5">
                 <h4 className="font-display text-xl font-bold text-white mb-1 group-hover:text-brand-deep-purple transition-colors">Neon Fist</h4>
                 <div className="flex items-center gap-2 text-white/70 text-sm">
