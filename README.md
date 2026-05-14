@@ -11,6 +11,7 @@ CineScope is a modern, immersive web application designed for movie and TV show 
 
 ### 🔍 Media Discovery & Details
 - Browse trending, top-rated, and newly released movies and TV shows.
+- **Explore by Genre**: Filter movies by genre using interactive genre pills that dynamically fetch and display popular titles.
 - Explore dedicated pages for media details, including cast overviews, trailers, and similar recommendations.
 - **Critical Consensus**: Aggregates ratings from IMDb, Rotten Tomatoes, and Metacritic (powered by OMDB).
 - **Intelligent API Proxying**: Built-in fallback proxies for the TMDB API to automatically bypass regional ISP blocks and ensure a seamless experience.
