@@ -10,9 +10,11 @@ const OMDB_BASE_URL = 'https://www.omdbapi.com';
 const TMDB_CACHE_TTL = 15 * 60 * 1000;
 const OMDB_CACHE_TTL = 24 * 60 * 60 * 1000;
 const GEMINI_CACHE_TTL = 60 * 60 * 1000;
+const GEMINI_COOLDOWN_MS = 30 * 60 * 1000;
 
 const responseCache = new Map();
 const inFlightRequests = new Map();
+const rateLimitCooldowns = new Map();
 
 const getCachedValue = (cacheKey, ttl) => {
   const entry = responseCache.get(cacheKey);
@@ -31,6 +33,23 @@ const setCachedValue = (cacheKey, value) => {
   });
   return value;
 };
+
+const setCooldown = (serviceKey, ttlMs = GEMINI_COOLDOWN_MS) => {
+  rateLimitCooldowns.set(serviceKey, Date.now() + ttlMs);
+};
+
+const isCooldownActive = (serviceKey) => {
+  const until = rateLimitCooldowns.get(serviceKey);
+  return typeof until === 'number' && Date.now() < until;
+};
+
+const createHttpError = (status, message) => {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+};
+
+const isPermanentApiError = (error) => [401, 403, 404, 429].includes(error?.status);
 
 const withCache = async (cacheKey, ttl, fetcher) => {
   const cached = getCachedValue(cacheKey, ttl);
@@ -65,7 +84,7 @@ const fetchJson = async (url, { timeoutMs = 8000, cacheKey = '', ttl = 0, reques
   try {
     const response = await fetch(url, { ...requestInit, signal: controller.signal });
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      throw createHttpError(response.status, `HTTP ${response.status}`);
     }
     return await response.json();
   } finally {
@@ -86,14 +105,26 @@ const tmdbFetch = async (path) => {
   const cacheKey = `tmdb:${directUrl}`;
 
   return withCache(cacheKey, TMDB_CACHE_TTL, async () => {
+    try {
+      return await fetchJson(directUrl, { timeoutMs: 3500 });
+    } catch (directError) {
+      console.warn(`[TMDB] Direct failed for ${path}:`, directError.message);
+
+      if (isPermanentApiError(directError)) {
+        throw directError;
+      }
+    }
+
     for (const proxy of PROXY_URLS) {
+      if (!proxy) continue;
+
       try {
-        const url = proxy ? `${proxy}${encodeURIComponent(directUrl)}` : directUrl;
+        const url = `${proxy}${encodeURIComponent(directUrl)}`;
         const data = await fetchJson(url, { timeoutMs: 3500 });
         if (proxy) console.log(`[TMDB] Fetched via proxy: ${proxy.substring(0, 30)}...`);
         return data;
       } catch (err) {
-        console.warn(`[TMDB] ${proxy ? 'Proxy' : 'Direct'} failed for ${path}:`, err.message);
+        console.warn(`[TMDB] Proxy failed for ${path}:`, err.message);
       }
     }
     throw new Error('All TMDB fetch attempts failed (direct + proxies)');
@@ -135,6 +166,11 @@ const fetchDynamicFallback = async (type) => {
   if (type === 'shows') prompt = "List 10 currently trending popular TV shows. Return ONLY a valid JSON array of objects with 'title' and 'year' (as string).";
   if (type === 'actors') prompt = "List 12 currently popular Hollywood actors. Return ONLY a valid JSON array of objects with 'name'.";
 
+  if (isCooldownActive('gemini:fallback')) {
+    console.warn(`[Gemini] Fallback is in cooldown, skipping ${type} generation.`);
+    return null;
+  }
+
   try {
     const data = await fetchJson(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
       timeoutMs: 10000,
@@ -148,7 +184,10 @@ const fetchDynamicFallback = async (type) => {
         })
       }
     });
-    const text = data.candidates[0].content.parts[0].text;
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      throw new Error('Gemini returned no content');
+    }
     const jsonStr = text.match(/\[.*\]/s);
     
     if (jsonStr) {
@@ -209,6 +248,10 @@ const fetchDynamicFallback = async (type) => {
       return finalData;
     }
   } catch (err) {
+    if (err?.status === 429) {
+      setCooldown('gemini:fallback');
+      console.warn('[Gemini] Rate limit reached while generating dynamic fallback. Using static fallback instead.');
+    }
     console.error("Dynamic Fallback failed:", err);
   }
   return null;
@@ -463,19 +506,30 @@ const geminiGenerate = async (prompt) => {
     throw new Error('Missing VITE_GEMINI_API_KEY');
   }
 
-  const data = await fetchJson(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
-    timeoutMs: 10000,
-    cacheKey: `gemini:prompt:${prompt}`,
-    ttl: GEMINI_CACHE_TTL,
-    requestInit: {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
-      })
+  if (isCooldownActive('gemini:prompt')) {
+    return '';
+  }
+
+  try {
+    const data = await fetchJson(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      timeoutMs: 10000,
+      cacheKey: `gemini:prompt:${prompt}`,
+      ttl: GEMINI_CACHE_TTL,
+      requestInit: {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      }
+    });
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  } catch (error) {
+    if (error?.status === 429) {
+      setCooldown('gemini:prompt');
     }
-  });
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    throw error;
+  }
 };
 
 // Gemini API Recommendations
