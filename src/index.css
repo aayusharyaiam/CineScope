@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-deep-purple: #845ec2;
+  --color-brand-pink-purple: #d65db1;
+  --color-brand-coral-pink: #ff6f91;
+  --color-brand-peach-orange: #ff9671;
+  --color-brand-amber-yellow: #ffc75f;
+  --color-brand-lime-yellow: #f9f871;
+  --font-display: "Outfit", sans-serif;
+  --font-body: "Inter", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-gray-900 dark:bg-[#0a0a1a] dark:text-gray-100 font-body antialiased selection:bg-brand-deep-purple selection:text-white transition-colors duration-300;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-xl;
+  }
+}

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profile - CineScope</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;family=Plus+Jakarta+Sans:wght@400;600&amp;family=Syne:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#8b133b",
+                        "on-background": "#e7e0e9",
+                        "secondary": "#ffb2bf",
+                        "background": "#151218",
+                        "surface-bright": "#3b383f",
+                        "error": "#ffb4ab",
+                        "inverse-on-surface": "#322f36",
+                        "surface-dim": "#151218",
+                        "on-surface-variant": "#ccc3d3",
+                        "surface-container": "#211e25",
+                        "on-secondary-container": "#ff97ab",
+                        "dark-bg": "#0a0a0f",
+                        "deep-purple": "#845ec2",
+                        "on-tertiary": "#422d00",
+                        "on-tertiary-container": "#fff7f0",
+                        "primary-container": "#845ec2",
+                        "tertiary-fixed": "#ffdea8",
+                        "on-primary-container": "#fdf6ff",
+                        "on-secondary": "#660027",
+                        "tertiary-fixed-dim": "#f5be57",
+                        "on-primary-fixed-variant": "#573093",
+                        "pink-purple": "#d65db1",
+                        "surface-container-high": "#2c292f",
+                        "dark-surface": "#12121a",
+                        "on-surface": "#e7e0e9",
+                        "primary-fixed": "#ecdcff",
+                        "coral-pink": "#ff6f91",
+                        "surface-container-highest": "#37333a",
+                        "on-tertiary-fixed-variant": "#5e4200",
+                        "secondary-fixed-dim": "#ffb2bf",
+                        "on-secondary-fixed": "#3f0015",
+                        "amber-yellow": "#ffc75f",
+                        "light-surface": "#ffffff",
+                        "on-secondary-fixed-variant": "#8b133b",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed": "#270057",
+                        "inverse-primary": "#6f4aac",
+                        "tertiary": "#f5be57",
+                        "outline": "#958e9c",
+                        "surface-container-lowest": "#100d13",
+                        "surface-container-low": "#1d1a21",
+                        "inverse-surface": "#e7e0e9",
+                        "on-tertiary-fixed": "#271900",
+                        "surface-variant": "#37333a",
+                        "outline-variant": "#4a4451",
+                        "secondary-fixed": "#ffd9de",
+                        "surface": "#151218",
+                        "primary-fixed-dim": "#d5baff",
+                        "primary": "#d5baff",
+                        "lime-yellow": "#f9f871",
+                        "tertiary-container": "#966a00",
+                        "on-error": "#690005",
+                        "on-primary": "#3f147b",
+                        "light-bg": "#faf8ff",
+                        "surface-tint": "#d5baff",
+                        "error-container": "#93000a",
+                        "peach-orange": "#ff9671"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "4rem",
+                        "margin-mobile": "1rem",
+                        "margin-desktop": "5rem",
+                        "gutter": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "headline-movie-title-mobile": ["Playfair Display"],
+                        "display-hero": ["Syne"],
+                        "headline-movie-title": ["Playfair Display"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "title-lg": ["Syne"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "display-hero-mobile": ["Syne"]
+                    },
+                    "fontSize": {
+                        "headline-movie-title-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "display-hero": ["64px", { "lineHeight": "1.1", "fontWeight": "800" }],
+                        "headline-movie-title": ["48px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "title-lg": ["24px", { "lineHeight": "1.4", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "display-hero-mobile": ["42px", { "lineHeight": "1.1", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-image: radial-gradient(circle at top right, rgba(132, 94, 194, 0.15) 0%, transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(255, 111, 145, 0.1) 0%, transparent 40%);
+            background-color: #151218;
+            background-attachment: fixed;
+        }
+        .glass-panel {
+            background: rgba(33, 30, 37, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-card {
+            background: rgba(55, 51, 58, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-4px);
+            background: rgba(55, 51, 58, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px -10px rgba(132, 94, 194, 0.3);
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(21, 18, 24, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(149, 142, 156, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(149, 142, 156, 0.5);
+        }
+    </style>
+</head>
+<body class="text-on-background font-body-md min-h-screen overflow-x-hidden">
+<!-- TopNavBar (Web) -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-desktop h-20 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-2xl hidden md:flex">
+<div class="flex items-center gap-12">
+<a class="font-display-hero text-title-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-deep-purple to-coral-pink" href="#">CineScope</a>
+<nav class="flex gap-8">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md hover:backdrop-blur-3xl hover:bg-white/5 duration-300 px-3 py-2 rounded-lg ripple-effect active:scale-95 transition-transform" href="#">Movies</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md hover:backdrop-blur-3xl hover:bg-white/5 duration-300 px-3 py-2 rounded-lg ripple-effect active:scale-95 transition-transform" href="#">TV Shows</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md hover:backdrop-blur-3xl hover:bg-white/5 duration-300 px-3 py-2 rounded-lg ripple-effect active:scale-95 transition-transform" href="#">Actors</a>
+<a class="text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary pb-1 font-body-md text-body-md hover:backdrop-blur-3xl hover:bg-white/5 duration-300 px-3 py-2 ripple-effect active:scale-95 transition-transform" href="#">Watchlist</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative hidden lg:block">
+<input class="bg-surface-container-high/50 border border-white/10 rounded-full py-2 pl-10 pr-4 text-on-surface focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all w-64 backdrop-blur-sm" placeholder="Search..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style="font-size: 20px;">search</span>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors ripple-effect active:scale-95">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors ripple-effect active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-gradient-to-tr from-deep-purple to-coral-pink p-0.5 cursor-pointer">
+<img alt="User profile" class="w-full h-full rounded-full object-cover" data-alt="A cinematic, high-end portrait of a person used as a user avatar profile picture. The person is warmly lit with subtle purple and pink neon rim lighting reflecting off their features. The background is a dark, out-of-focus bokeh reminiscent of a rainy city street at night. The mood is sophisticated and moody, perfectly matching a premium streaming service aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBaNJtsioJyKGYN6NGkS4okMxCuiV1KLItqHImYWu0Vr7l7_-TzfIjB7UxIKGL96GKcocgvQ83QLiXzMD6TBlrTq3MA3u79PhUf6jhejBNOnJHuYPTr3FHhAA7lgvukgwVPG7_cBE_DXwTIhSz46tb2LuvGXcmruSH0Ygn7nfo9Bg46qYljLXJZ9qvggj-qGqWIEWZZ9McWIZpjIZR0gFgK3IkWFMkJ9D0udVk5NY6C_ZIoRfZ2UgX-sW1io2QQlHFjohx5KF1pup1"/>
+</div>
+</div>
+</header>
+<!-- Main Content Grid -->
+<main class="pt-28 pb-20 px-margin-mobile md:px-margin-desktop max-w-[1440px] mx-auto min-h-screen">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter mt-8">
+<!-- Left Sidebar (Profile Info & Stats) -->
+<aside class="lg:col-span-4 flex flex-col gap-8">
+<!-- Profile Card -->
+<div class="glass-panel rounded-xl p-8 flex flex-col items-center text-center relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary-container/20 to-transparent"></div>
+<div class="relative w-32 h-32 rounded-full p-1 bg-gradient-to-br from-deep-purple via-coral-pink to-amber-yellow mb-4 z-10 shadow-[0_0_30px_rgba(132,94,194,0.4)]">
+<img alt="User Avatar" class="w-full h-full rounded-full object-cover border-4 border-surface-container" data-alt="A cinematic, high-end portrait of a person used as a large user avatar profile picture. The person is warmly lit with subtle purple and pink neon rim lighting reflecting off their features. The background is a dark, out-of-focus bokeh reminiscent of a rainy city street at night. The mood is sophisticated and moody, perfectly matching a premium streaming service aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1fjHmUmMM1nVq5fs8oNNajyvVpvFOOl4hOaA0O6jqGb3Oy6oApFp5ySskHLhdySspW9TEX_57Ef-HrjyZLWJGYhtytHe564tENQtH37AiPxo3-uzxiMFL-GltFDcVF5yf7VBaB_yHH-77O1pU_OY9c9uxz3zJ9gF65Zi1HYkjQqMcw0GQ-wbNJr3sEdhpzYMj7fRRkZP1ZzzK1XqtP3SvqsX_W62nv5f-RCoXx46pSc3pBi55fO8PSuj3D0HxGPrPQU6JMfAxo0sc"/>
+</div>
+<h1 class="font-title-lg text-title-lg text-on-surface mb-1 z-10">Elena Vance</h1>
+<p class="font-body-md text-on-surface-variant mb-4 z-10">@elenaviews</p>
+<div class="bg-primary-container/20 border border-primary/30 text-primary px-4 py-1.5 rounded-full font-label-sm text-label-sm mb-6 flex items-center gap-2 z-10">
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+                        Film Enthusiast
+                    </div>
+<!-- Level Progress -->
+<div class="w-full z-10 text-left">
+<div class="flex justify-between items-end mb-2">
+<span class="font-body-md text-sm text-on-surface">Level 42</span>
+<span class="font-label-sm text-on-surface-variant text-xs">8,450 / 10,000 XP</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-deep-purple to-coral-pink rounded-full w-[84.5%]"></div>
+</div>
+</div>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-2 gap-4">
+<div class="glass-card rounded-xl p-5 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-deep-purple mb-2" style="font-size: 28px;">movie</span>
+<span class="font-title-lg text-xl text-on-surface">1,248</span>
+<span class="font-label-sm text-on-surface-variant mt-1">Movies Watched</span>
+</div>
+<div class="glass-card rounded-xl p-5 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-coral-pink mb-2" style="font-size: 28px;">schedule</span>
+<span class="font-title-lg text-xl text-on-surface">3,120</span>
+<span class="font-label-sm text-on-surface-variant mt-1">Hours Watched</span>
+</div>
+<div class="glass-card rounded-xl p-5 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-amber-yellow mb-2" style="font-size: 28px;">reviews</span>
+<span class="font-title-lg text-xl text-on-surface">342</span>
+<span class="font-label-sm text-on-surface-variant mt-1">Reviews Written</span>
+</div>
+<div class="glass-card rounded-xl p-5 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-lime-yellow mb-2" style="font-size: 28px;">favorite</span>
+<span class="font-title-lg text-xl text-on-surface">89</span>
+<span class="font-label-sm text-on-surface-variant mt-1">Favorites</span>
+</div>
+</div>
+</aside>
+<!-- Right Content Area (Tabs & Lists) -->
+<section class="lg:col-span-8 flex flex-col gap-6">
+<!-- Tab Navigation -->
+<div class="flex border-b border-white/10 gap-8 overflow-x-auto hide-scrollbar">
+<button class="pb-4 font-title-lg text-lg text-on-surface border-b-2 border-primary relative">
+                        Watch History
+                        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-deep-purple to-coral-pink shadow-[0_0_10px_rgba(255,111,145,0.5)]"></div>
+</button>
+<button class="pb-4 font-title-lg text-lg text-on-surface-variant hover:text-on-surface transition-colors">
+                        Watchlist
+                    </button>
+<button class="pb-4 font-title-lg text-lg text-on-surface-variant hover:text-on-surface transition-colors">
+                        Reviews
+                    </button>
+<button class="pb-4 font-title-lg text-lg text-on-surface-variant hover:text-on-surface transition-colors ml-auto flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 20px;">file_download</span>
+                        Import
+                    </button>
+</div>
+<!-- Content Area: Watch History -->
+<div class="flex flex-col gap-4 mt-2">
+<!-- History Item 1 -->
+<div class="glass-panel rounded-xl p-4 flex gap-6 items-center group cursor-pointer transition-all hover:bg-surface-container-highest/80">
+<div class="w-16 h-24 bg-surface-container-high rounded-lg overflow-hidden flex-shrink-0 relative">
+<img alt="Movie Poster" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A dark, moody cinematic poster for a sci-fi thriller movie. The image features deep blacks, stark neon blue and pink lighting, and a solitary figure standing in a vast, monolithic futuristic landscape. The composition is highly stylized, resembling premium streaming service key art with a subtle film grain texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkoDkShxgqT7SuWvC2GZmJDZ4m5ueH8qU4ah9WgWX7VynsbKByVkwO-MliimaekPDOMUAzHTiZ8Q2KeyZgfl-KIxVT8WpSKMllOGT-_bV7EfKRsEPD0twoUVTSsvwjaM3FyWdLQeXbAqUrJPHgvT8r3MdQhfFWsL2pm-PF75m2rItmm6mS6OhbWK6iqbDERoLeaefUaTTjzqh_nOVnzbinl6JKA-cTus2Ig8jZRvrZ_W_jVr4E3r_gi-GkjpZVOxg8fTrZJEoigbzA"/>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-movie-title text-2xl text-on-surface mb-1 group-hover:text-primary transition-colors">Neon Genesis: Origin</h3>
+<p class="font-body-md text-on-surface-variant text-sm mb-2">Watched on Oct 24, 2023</p>
+<div class="flex items-center gap-1 text-amber-yellow">
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-size: 16px;">star_half</span>
+</div>
+</div>
+<div class="hidden sm:flex items-center gap-3 pr-4">
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-coral-pink hover:bg-coral-pink/10 transition-all">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- History Item 2 -->
+<div class="glass-panel rounded-xl p-4 flex gap-6 items-center group cursor-pointer transition-all hover:bg-surface-container-highest/80">
+<div class="w-16 h-24 bg-surface-container-high rounded-lg overflow-hidden flex-shrink-0 relative">
+<img alt="Movie Poster" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A cinematic vintage movie poster featuring a grainy, high-contrast black and white photograph of an old cinema facade. There are subtle hints of sepia tone. The lighting is dramatic, casting long shadows. It evokes a classic, premium arthouse film aesthetic suitable for a high-end streaming platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBprCbTowO2kWC_1-YnBfQVw3I1vo2bvWvpuOLEfrLRWXb1t6mMa9EtCxCRj9AQHdJSqlSX4GX19xFroPeUUjictHKnioVR9QSQfNvD6k3YD-n3E1T-WaUfm3jEljLE4T-MzyYeTVdrFUnm0w5erElrZfusC4guYLPYROZ_qC0yt1QdXC7gxVwg-oifz7WVJNstNm1jU57n94js9drQsq3Uvm2fMVWlNj0V6gHmrBRAPHUU93GYKKsT20ZfPM-F0dtzcHARA48ulz5K"/>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-movie-title text-2xl text-on-surface mb-1 group-hover:text-primary transition-colors">The Last Reel</h3>
+<p class="font-body-md text-on-surface-variant text-sm mb-2">Watched on Oct 22, 2023</p>
+<div class="flex items-center gap-1 text-amber-yellow">
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<div class="hidden sm:flex items-center gap-3 pr-4">
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-coral-pink bg-coral-pink/10 transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- History Item 3 -->
+<div class="glass-panel rounded-xl p-4 flex gap-6 items-center group cursor-pointer transition-all hover:bg-surface-container-highest/80">
+<div class="w-16 h-24 bg-surface-container-high rounded-lg overflow-hidden flex-shrink-0 relative">
+<img alt="Movie Poster" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A vivid, colorful cinematic movie poster for an adventure film. It features sweeping, majestic mountain landscapes bathed in golden hour sunlight. The colors are rich and saturated, predominantly deep greens, fiery oranges, and deep blue skies. The overall style is epic and immersive, fitting a premium streaming UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZt4jwQkTsnYnMXqZBN8BfbuIX3sOyufBUvui66ZN2AylIzHoH1omHM_nictyrXcxNefnEImsoaSTxBsbUdUE2c7AG6MXPw3ZAGWh0ccV9FScnCH-si6aDGVTF0kiKeRWOW1qr0RTomiQGdRIut4IrnUbptNaHd_-5yHGI6Q5gu18Ug8tloUIv0rfyWpLDgecDNIFmbPZaSaL11VucuSFwsr3po3237Nc3igyqLXgG0WaG1ss72LJB1G5xS0Fxr15p9kj3t4XrA-aK"/>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-movie-title text-2xl text-on-surface mb-1 group-hover:text-primary transition-colors">Echoes of the Valley</h3>
+<p class="font-body-md text-on-surface-variant text-sm mb-2">Watched on Oct 20, 2023</p>
+<div class="flex items-center gap-1 text-amber-yellow">
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-size: 16px;">star</span>
+<span class="material-symbols-outlined" style="font-size: 16px;">star</span>
+</div>
+</div>
+<div class="hidden sm:flex items-center gap-3 pr-4">
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-coral-pink hover:bg-coral-pink/10 transition-all">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<button class="mt-4 py-3 w-full rounded-xl border border-white/10 text-on-surface hover:bg-white/5 transition-colors font-label-sm uppercase tracking-wider flex items-center justify-center gap-2">
+                        View Full History
+                        <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+</button>
+</div>
+</section>
+</div>
+</main>
+</body></html>

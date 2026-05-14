@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sign Up / Login - CineScope</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&amp;family=Plus+Jakarta+Sans:wght@400;600&amp;family=Syne:wght@400;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#8b133b",
+                        "on-background": "#e7e0e9",
+                        "secondary": "#ffb2bf",
+                        "background": "#151218",
+                        "surface-bright": "#3b383f",
+                        "error": "#ffb4ab",
+                        "inverse-on-surface": "#322f36",
+                        "surface-dim": "#151218",
+                        "on-surface-variant": "#ccc3d3",
+                        "surface-container": "#211e25",
+                        "on-secondary-container": "#ff97ab",
+                        "dark-bg": "#0a0a0f",
+                        "deep-purple": "#845ec2",
+                        "on-tertiary": "#422d00",
+                        "on-tertiary-container": "#fff7f0",
+                        "primary-container": "#845ec2",
+                        "tertiary-fixed": "#ffdea8",
+                        "on-primary-container": "#fdf6ff",
+                        "on-secondary": "#660027",
+                        "tertiary-fixed-dim": "#f5be57",
+                        "on-primary-fixed-variant": "#573093",
+                        "pink-purple": "#d65db1",
+                        "surface-container-high": "#2c292f",
+                        "dark-surface": "#12121a",
+                        "on-surface": "#e7e0e9",
+                        "primary-fixed": "#ecdcff",
+                        "coral-pink": "#ff6f91",
+                        "surface-container-highest": "#37333a",
+                        "on-tertiary-fixed-variant": "#5e4200",
+                        "secondary-fixed-dim": "#ffb2bf",
+                        "on-secondary-fixed": "#3f0015",
+                        "amber-yellow": "#ffc75f",
+                        "light-surface": "#ffffff",
+                        "on-secondary-fixed-variant": "#8b133b",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed": "#270057",
+                        "inverse-primary": "#6f4aac",
+                        "tertiary": "#f5be57",
+                        "outline": "#958e9c",
+                        "surface-container-lowest": "#100d13",
+                        "surface-container-low": "#1d1a21",
+                        "inverse-surface": "#e7e0e9",
+                        "on-tertiary-fixed": "#271900",
+                        "surface-variant": "#37333a",
+                        "outline-variant": "#4a4451",
+                        "secondary-fixed": "#ffd9de",
+                        "surface": "#151218",
+                        "primary-fixed-dim": "#d5baff",
+                        "primary": "#d5baff",
+                        "lime-yellow": "#f9f871",
+                        "tertiary-container": "#966a00",
+                        "on-error": "#690005",
+                        "on-primary": "#3f147b",
+                        "light-bg": "#faf8ff",
+                        "surface-tint": "#d5baff",
+                        "error-container": "#93000a",
+                        "peach-orange": "#ff9671"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "4rem",
+                        "margin-mobile": "1rem",
+                        "margin-desktop": "5rem",
+                        "gutter": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "headline-movie-title-mobile": ["Playfair Display"],
+                        "display-hero": ["Syne"],
+                        "headline-movie-title": ["Playfair Display"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "title-lg": ["Syne"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "display-hero-mobile": ["Syne"]
+                    },
+                    "fontSize": {
+                        "headline-movie-title-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "display-hero": ["64px", { "lineHeight": "1.1", "fontWeight": "800" }],
+                        "headline-movie-title": ["48px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "title-lg": ["24px", { "lineHeight": "1.4", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "display-hero-mobile": ["42px", { "lineHeight": "1.1", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ripple-effect {
+            position: relative;
+            overflow: hidden;
+            transform: translate3d(0, 0, 0);
+        }
+        .ripple-effect::after {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            opacity: 0;
+            transition: transform .5s, opacity 1s;
+        }
+        .ripple-effect:active::after {
+            transform: scale(0, 0);
+            opacity: .2;
+            transition: 0s;
+        }
+        
+        /* Form Autofill styles for Dark Mode */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active{
+            -webkit-box-shadow: 0 0 0 30px #211e25 inset !important;
+            -webkit-text-fill-color: #e7e0e9 !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Suppressed NavBars: The TopNavBar and BottomNavBar are deliberately excluded from this transactional Sign Up/Login page as per the semantic shell mandate. -->
+<main class="relative min-h-screen w-full flex items-center justify-center p-4 md:p-margin-desktop overflow-hidden">
+<!-- Cinematic Blurred Poster Background -->
+<div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+<div class="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-cover bg-center opacity-30 blur-[60px] transform rotate-12" data-alt="A moody, cinematic background featuring an abstract, blurred collage of movie posters focusing on deep purples. The composition is highly atmospheric, utilizing heavy bokeh and a soft vignette to create a multi-layered sense of space. The lighting is dramatic, typical of high-end streaming service interfaces, with subtle grain textures adding a premium, filmic quality." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBg93VOd6N23AJAeuBCvWTSEWsKbtGnrQHXcltB5llJ05TL0E57TR-oZ_mRdEQrnNChNntInYbVCwj0r4VrO2VYZYwbxH1OmeB2h0ZH1RUn0CaBL839xUAVn9vk90wUyQOTd3lLGJQ55KIotbQcNgKz2zT0FhzcuA_SR2V_g60yJHDw_-cl6YiztRzlwX2WNZb5sWxHglG5hUch7gyWHZHHPjOb8mpeE59LQBkLw-sz7-8lKajhVqSRmjc7miVfFG1r7a0d7MniWqrH');">
+</div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[70%] h-[70%] bg-cover bg-center opacity-40 blur-[80px] transform -rotate-6" data-alt="A moody, cinematic background featuring an abstract, blurred collage of movie posters focusing on vibrant coral pinks. The composition is highly atmospheric, utilizing heavy bokeh and a soft vignette to create a multi-layered sense of space. The lighting is dramatic, typical of high-end streaming service interfaces, with subtle grain textures adding a premium, filmic quality." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAoqnRdKS9M9YrzG1an3pHrWDERy01RT5lVH5pPQe7W49PmDnzhiY_cW8EivTRDwLj6mZYiaYb_SzqdTUhvcFV48f3RbWg0V_8NvQ7C54GKFTQoCD4ENrjpYlGLVClk-ZLPtr060T_YOHU2TEs3jOZCLO7XAos88PlKkrpzWgvOG319eS829BA8_M8xc4dc-kE0ojFkXBTjD4vgPPTJu9jbEyfFHB_jK8COD9N04r-zELoNIWMQGTmJ3WZ1R35QwD93Ci1p_osozMNm');">
+</div>
+<!-- Vignette Overlay -->
+<div class="absolute inset-0 bg-radial-gradient from-transparent to-background/90"></div>
+<!-- Subtle Film Grain -->
+<div class="absolute inset-0 opacity-20 mix-blend-overlay" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+</div>
+<!-- Glass Card Container -->
+<div class="relative z-10 w-full max-w-[440px] bg-surface-container/60 dark:bg-surface-container-highest/40 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden">
+<!-- Subtle Glow Effect behind card -->
+<div class="absolute -inset-1 bg-gradient-to-br from-deep-purple/20 to-coral-pink/20 blur-xl opacity-50 z-[-1]"></div>
+<div class="p-8 md:p-10 flex flex-col gap-8">
+<!-- Brand Anchor -->
+<div class="text-center">
+<h1 class="font-display-hero text-title-lg font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-deep-purple via-coral-pink to-peach-orange">
+                        CineScope
+                    </h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 opacity-80">Your gateway to cinematic worlds.</p>
+</div>
+<!-- Toggle Tabs -->
+<div class="flex relative rounded-full bg-surface-container-highest/50 p-1 border border-white/5 backdrop-blur-md">
+<button class="flex-1 py-2.5 text-center rounded-full bg-primary-container/90 text-on-primary-container font-label-sm text-label-sm shadow-md transition-all duration-300">
+                        Log In
+                    </button>
+<button class="flex-1 py-2.5 text-center rounded-full text-on-surface-variant font-label-sm text-label-sm hover:text-on-surface hover:bg-white/5 transition-all duration-300">
+                        Sign Up
+                    </button>
+</div>
+<!-- Form Area -->
+<form class="flex flex-col gap-5">
+<!-- Floating Label Input: Email -->
+<div class="relative group">
+<input class="block w-full bg-surface-container/80 border border-outline-variant/50 rounded-xl px-4 pt-6 pb-2 text-on-surface font-body-md text-body-md focus:outline-none focus:border-primary/70 focus:bg-surface-container focus:ring-1 focus:ring-primary/50 peer transition-all duration-300 placeholder-transparent" id="email" placeholder="Email Address" required="" type="email"/>
+<label class="absolute left-4 top-4 text-on-surface-variant font-body-md text-body-md transition-all duration-300 transform -translate-y-2 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-2 peer-focus:text-primary z-10 pointer-events-none" for="email">
+                            Email Address
+                        </label>
+</div>
+<!-- Floating Label Input: Password -->
+<div class="relative group">
+<input class="block w-full bg-surface-container/80 border border-outline-variant/50 rounded-xl px-4 pt-6 pb-2 text-on-surface font-body-md text-body-md focus:outline-none focus:border-primary/70 focus:bg-surface-container focus:ring-1 focus:ring-primary/50 peer transition-all duration-300 placeholder-transparent" id="password" placeholder="Password" required="" type="password"/>
+<label class="absolute left-4 top-4 text-on-surface-variant font-body-md text-body-md transition-all duration-300 transform -translate-y-2 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-2 peer-focus:text-primary z-10 pointer-events-none" for="password">
+                            Password
+                        </label>
+<!-- Visibility Toggle Icon -->
+<button class="absolute right-4 top-4 text-on-surface-variant hover:text-primary transition-colors focus:outline-none" type="button">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility_off</span>
+</button>
+</div>
+<!-- Forgot Password Link -->
+<div class="flex justify-end mt-[-8px]">
+<a class="font-label-sm text-label-sm text-primary/80 hover:text-primary transition-colors" href="#">Forgot Password?</a>
+</div>
+<!-- Primary CTA -->
+<button class="w-full py-3.5 mt-2 rounded-xl bg-gradient-to-r from-deep-purple to-coral-pink text-on-primary-container font-label-sm text-label-sm flex items-center justify-center gap-2 ripple-effect transition-transform duration-300 hover:scale-[1.02] hover:shadow-[0_8px_20px_rgba(132,94,194,0.3)] group relative overflow-hidden" type="submit">
+<div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+<span class="relative z-10 tracking-wider uppercase">Log In</span>
+<span class="material-symbols-outlined relative z-10 group-hover:translate-x-1 transition-transform duration-300">arrow_forward</span>
+</button>
+</form>
+<!-- Divider -->
+<div class="flex items-center gap-4 py-2">
+<div class="h-px bg-outline-variant/40 flex-1"></div>
+<span class="text-on-surface-variant/60 font-label-sm text-label-sm uppercase tracking-widest">Or</span>
+<div class="h-px bg-outline-variant/40 flex-1"></div>
+</div>
+<!-- Secondary Auth Actions -->
+<div class="flex flex-col gap-3">
+<button class="w-full py-3 rounded-xl bg-surface-container/40 border border-outline-variant/30 text-on-surface font-label-sm text-label-sm flex items-center justify-center gap-3 hover:bg-white/5 hover:border-outline-variant/60 transition-all duration-300 ripple-effect backdrop-blur-sm group" type="button">
+<!-- Custom Google G shape using CSS shapes/gradients to avoid external SVG dependency while maintaining high-end look -->
+<div class="w-5 h-5 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-blue-500 p-[2px] opacity-80 group-hover:opacity-100 transition-opacity">
+<div class="w-full h-full bg-surface-container-highest rounded-full flex items-center justify-center">
+<span class="text-[10px] font-bold text-white leading-none">G</span>
+</div>
+</div>
+<span class="tracking-wide">Continue with Google</span>
+</button>
+<button class="w-full py-3 rounded-xl bg-surface-container/40 border border-outline-variant/30 text-on-surface font-label-sm text-label-sm flex items-center justify-center gap-3 hover:bg-white/5 hover:border-outline-variant/60 transition-all duration-300 ripple-effect backdrop-blur-sm" type="button">
+<span class="material-symbols-outlined text-xl opacity-80">ios</span>
+<span class="tracking-wide">Continue with Apple</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>
