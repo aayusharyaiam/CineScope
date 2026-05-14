@@ -14,6 +14,7 @@ CineScope is a modern, immersive web application designed for movie and TV show 
 - **Explore by Genre**: Filter movies by genre using interactive genre pills that dynamically fetch and display popular titles.
 - Explore dedicated pages for media details, including cast overviews, trailers, and similar recommendations.
 - **Critical Consensus**: Aggregates ratings from IMDb, Rotten Tomatoes, and Metacritic (powered by OMDB).
+- **CineBrain AI Picks**: Gemini-powered recommendations generated from onboarding favorites, genres, ratings, favorites, and watch history, cached in Firestore.
 - **Intelligent API Proxying**: Built-in fallback proxies for the TMDB API to automatically bypass regional ISP blocks and ensure a seamless experience.
 
 ### 👤 User Authentication & Profiles
@@ -66,6 +67,7 @@ Make sure you have [Node.js](https://nodejs.org/) installed on your machine.
    ```env
    VITE_TMDB_API_KEY=your_tmdb_api_key
    VITE_OMDB_API_KEY=your_omdb_api_key
+   VITE_GEMINI_API_KEY=your_gemini_api_key
    ```
    *(Note: The Firebase configuration is currently handled directly in `src/firebase.js`. For a production deployment, ensure you restrict your Firebase and API keys appropriately).*
 

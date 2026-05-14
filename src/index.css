@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-brand-deep-purple: #845ec2;
   --color-brand-pink-purple: #d65db1;

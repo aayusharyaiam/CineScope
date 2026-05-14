@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -15,8 +15,10 @@ export default function Navbar() {
 
   // Close mobile menu on navigation
   useEffect(() => {
-    setMobileOpen(false);
-    setMobileTvOpen(false);
+    Promise.resolve().then(() => {
+      setMobileOpen(false);
+      setMobileTvOpen(false);
+    });
   }, [location.pathname]);
 
   // Close desktop dropdown on outside click
@@ -79,6 +81,7 @@ export default function Navbar() {
 
           <Link to="/actors" className={linkBase}>Actors</Link>
           <Link to="/profile" className={linkBase}>Watchlist</Link>
+          <Link to="/support" className={linkBase}>Support</Link>
         </div>
         
         {/* Desktop Right */}
@@ -172,6 +175,9 @@ export default function Navbar() {
               </Link>
               <Link to="/profile" className="px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-brand-deep-purple/10 font-body font-semibold transition-colors flex items-center gap-3">
                 <span className="material-symbols-outlined text-xl">bookmark</span> Watchlist
+              </Link>
+              <Link to="/support" className="px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-brand-deep-purple/10 font-body font-semibold transition-colors flex items-center gap-3">
+                <span className="material-symbols-outlined text-xl">help</span> Support
               </Link>
 
               <div className="h-px bg-gray-200 dark:bg-white/10 my-3"></div>

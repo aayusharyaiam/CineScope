@@ -1,24 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getAllUserMedia } from '../services/userMedia';
+import { getUserProfile } from '../services/userProfile';
+import { getUserRecommendations } from '../services/aiRecommendations';
 import MovieCard from '../components/MovieCard';
+import { LoadingState } from '../components/AppState';
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState('history');
 
   const { currentUser } = useAuth();
   const [mediaItems, setMediaItems] = useState([]);
+  const [profileData, setProfileData] = useState(null);
+  const [aiPicks, setAiPicks] = useState([]);
+  const [loadingAiPicks, setLoadingAiPicks] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (currentUser) {
-      getAllUserMedia(currentUser.uid).then(items => {
+      Promise.all([
+        getAllUserMedia(currentUser.uid),
+        getUserProfile(currentUser.uid)
+      ]).then(([items, profile]) => {
         setMediaItems(items || []);
+        setProfileData(profile);
         setLoading(false);
       });
+
+      let cancelled = false;
+      Promise.resolve()
+        .then(() => {
+          if (!cancelled) setLoadingAiPicks(true);
+          return getUserRecommendations(currentUser.uid, { limit: 8 });
+        })
+        .then(items => setAiPicks(items || []))
+        .finally(() => {
+          if (!cancelled) setLoadingAiPicks(false);
+        });
+
+      return () => { cancelled = true; };
     } else {
-      setLoading(false);
+      Promise.resolve().then(() => setLoading(false));
     }
   }, [currentUser]);
 
@@ -35,6 +58,8 @@ export default function Profile() {
   const tvWatched = watchedItems.filter(m => m.mediaType === 'tv').length;
   const totalWatched = watchedItems.length;
   const estimatedHours = Math.round((moviesWatched * 2) + (tvWatched * 0.75));
+  const badgeTitle = totalWatched >= 80 ? 'Auteur' : totalWatched >= 40 ? 'Film Critic' : totalWatched >= 20 ? 'Cinephile' : totalWatched >= 5 ? 'Film Enthusiast' : 'Casual Viewer';
+  const favoriteGenre = profileData?.preferences?.favoriteGenres?.[0] || 'Not tuned yet';
 
   // Basic stats mapped to current user or default if empty
   const user = {
@@ -53,7 +78,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="pt-8 pb-20 px-4 md:px-8 max-w-[1440px] mx-auto min-h-screen relative z-10">
+    <div className="pt-8 pb-20 px-4 md:px-8 max-w-360 mx-auto min-h-screen relative z-10">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
         
         {/* Left Sidebar (Profile Info & Stats) */}
@@ -71,7 +96,7 @@ export default function Profile() {
             
             <div className="bg-brand-deep-purple/10 dark:bg-brand-deep-purple/20 border border-brand-deep-purple/30 text-brand-deep-purple dark:text-brand-primary px-4 py-1.5 rounded-full text-xs font-bold mb-6 flex items-center gap-2 z-10 uppercase tracking-wider">
               <span className="material-symbols-outlined text-[16px] fill-current">star</span>
-              Film Enthusiast
+              {badgeTitle}
             </div>
 
             {/* Level Progress */}
@@ -112,6 +137,22 @@ export default function Profile() {
               <span className="font-body text-gray-500 dark:text-gray-400 text-xs mt-1 uppercase tracking-wider">Favorites</span>
             </div>
           </div>
+
+          <div className="glass-panel rounded-xl p-6">
+            <div className="flex items-center gap-2 text-brand-coral-pink text-xs font-bold uppercase tracking-wider mb-3">
+              <span className="material-symbols-outlined text-[18px]">psychology</span>
+              Taste Snapshot
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Top genre</p>
+                <p className="font-display text-2xl font-bold text-gray-900 dark:text-white">{favoriteGenre}</p>
+              </div>
+              <Link to="/onboarding" className="min-h-11 px-4 rounded-xl border border-brand-coral-pink/40 text-brand-coral-pink font-semibold inline-flex items-center justify-center">
+                Tune
+              </Link>
+            </div>
+          </div>
         </aside>
 
         {/* Right Content Area (Tabs & Lists) */}
@@ -119,7 +160,7 @@ export default function Profile() {
           
           {/* Tab Navigation */}
           <div className="flex border-b border-gray-200 dark:border-white/10 gap-8 overflow-x-auto hide-scrollbar">
-            {['history', 'watchlist', 'reviews', 'favorites'].map((tab) => (
+            {['history', 'watchlist', 'ai picks', 'reviews', 'favorites'].map((tab) => (
               <button 
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -143,9 +184,7 @@ export default function Profile() {
           {/* Content Area */}
           <div className="flex flex-col gap-4 mt-2">
             {loading ? (
-              <div className="py-20 flex justify-center">
-                <div className="w-10 h-10 rounded-full border-4 border-brand-deep-purple/30 border-t-brand-deep-purple animate-spin"></div>
-              </div>
+              <LoadingState title="Loading your profile" message="Syncing watchlist, ratings, and taste data..." />
             ) : (
               <>
                 {activeTab === 'history' && (
@@ -207,6 +246,43 @@ export default function Profile() {
                               imageUrl={item.posterUrl}
                               mediaType={item.mediaType}
                             />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {activeTab === 'ai picks' && (
+                  <>
+                    {loadingAiPicks ? (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        {[...Array(4)].map((_, index) => (
+                          <div key={index}>
+                            <div className="aspect-2/3 rounded-xl bg-white/10 animate-pulse mb-2"></div>
+                            <div className="h-4 rounded bg-white/10 animate-pulse"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : aiPicks.length === 0 ? (
+                      <div className="py-20 text-center text-gray-500 dark:text-gray-400 font-body">
+                        <span className="material-symbols-outlined text-5xl mb-4 text-gray-300 dark:text-gray-600">auto_awesome</span>
+                        <p>CineBrain needs a few favorites before it can recommend well.</p>
+                        <Link to="/onboarding" className="text-brand-coral-pink font-semibold hover:text-brand-deep-purple transition-colors mt-2 inline-block">Tune your taste profile</Link>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
+                        {aiPicks.map(item => (
+                          <div key={`${item.mediaType}_${item.id}`} className="relative group">
+                            <MovieCard
+                              id={item.id}
+                              title={item.title}
+                              year={item.year}
+                              rating={item.rating}
+                              imageUrl={item.imageUrl}
+                              mediaType={item.mediaType}
+                            />
+                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 line-clamp-3">{item.reason}</p>
                           </div>
                         ))}
                       </div>

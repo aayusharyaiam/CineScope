@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { tmdbApi, omdbApi } from '../services/api';
+import { tmdbApi } from '../services/api';
 import UserActions from '../components/UserActions';
+import AiRecommendationBlock from '../components/AiRecommendationBlock';
+import { ErrorState, LoadingState } from '../components/AppState';
 
 export default function ShowDetail() {
   const { id } = useParams();
@@ -9,11 +11,13 @@ export default function ShowDetail() {
   const [show, setShow] = useState(null);
   const [omdbData, setOmdbData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
     const fetchDetails = async () => {
       setLoading(true);
+      setFetchError('');
       try {
         const data = await tmdbApi.getShowDetails(id);
         if (!cancelled) setShow(data);
@@ -24,10 +28,11 @@ export default function ShowDetail() {
             const omdbRes = await fetch(`https://www.omdbapi.com/?t=${encodeURIComponent(data.name)}&type=series&apikey=${import.meta.env.VITE_OMDB_API_KEY}`);
             const omdbJson = await omdbRes.json();
             if (!cancelled && omdbJson.Response === "True") setOmdbData(omdbJson);
-          } catch (e) { /* omdb optional */ }
+          } catch { /* omdb optional */ }
         }
       } catch (error) {
         console.error("Error fetching show details:", error);
+        if (!cancelled) setFetchError('Show details could not be loaded right now.');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -38,14 +43,24 @@ export default function ShowDetail() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="w-12 h-12 rounded-full border-4 border-brand-coral-pink/30 border-t-brand-coral-pink animate-spin"></div>
+      <div className="px-4 py-12">
+        <LoadingState title="Loading the series dossier" message="Fetching seasons, ratings, cast, and trailers..." />
       </div>
     );
   }
 
-  if (!show) {
-    return <div className="text-center py-20 text-white font-display">Show not found.</div>;
+  if (!show || fetchError || show.name === 'Show Info Unavailable') {
+    return (
+      <div className="px-4 py-12 min-h-[60vh] flex items-center justify-center">
+        <ErrorState
+          title="Show details are unavailable"
+          message={fetchError || show?.overview || 'The catalog could not return this show. It may be unavailable or temporarily blocked.'}
+          actionLabel="Back to search"
+          actionTo="/search"
+          className="w-full max-w-2xl"
+        />
+      </div>
+    );
   }
 
   const imdbRating = omdbData?.imdbRating || show.vote_average?.toFixed(1);
@@ -62,12 +77,12 @@ export default function ShowDetail() {
   return (
     <div className="relative w-full min-h-screen pb-32">
       {/* Hero Backdrop */}
-      <div className="absolute inset-0 w-full h-[600px] md:h-[800px] z-0 -mt-24 md:-mt-28">
+      <div className="absolute inset-0 w-full h-150 md:h-200 z-0 -mt-24 md:mt-0">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
           style={{ backgroundImage: `url('${backdropUrl}')`, backgroundAttachment: 'fixed' }}
         ></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a1a] via-[#0a0a1a]/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-linear-to-t from-[#0a0a1a] via-[#0a0a1a]/60 to-transparent"></div>
         <div className="absolute inset-0 bg-radial-gradient from-transparent to-[#0a0a1a] opacity-80"></div>
       </div>
 
@@ -80,13 +95,13 @@ export default function ShowDetail() {
       </button>
 
       {/* Main Content */}
-      <main className="relative z-10 max-w-[1440px] mx-auto px-4 md:px-20 pt-[300px] md:pt-[400px]">
+      <main className="relative z-10 max-w-360 mx-auto px-4 md:px-20 pt-75 md:pt-100">
         
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start mb-16">
           
           {/* Poster */}
-          <div className="flex-shrink-0 w-48 md:w-64 lg:w-80 group mx-auto lg:mx-0 -mt-20 lg:-mt-0">
-            <div className="glass-panel rounded-xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_20px_50px_rgba(132,94,194,0.3)] aspect-[2/3] relative">
+          <div className="shrink-0 w-48 md:w-64 lg:w-80 group mx-auto lg:mx-0 -mt-20 lg:mt-0">
+            <div className="glass-panel rounded-xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_20px_50px_rgba(132,94,194,0.3)] aspect-2/3 relative">
               <img src={posterUrl} alt={show.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold border border-white/20">
                 <span className="text-brand-amber-yellow">★ {show.vote_average?.toFixed(1)}</span>
@@ -95,7 +110,7 @@ export default function ShowDetail() {
           </div>
 
           {/* Metadata */}
-          <div className="flex-grow pt-4">
+          <div className="grow pt-4">
             <div className="flex items-center gap-3 mb-3">
               <span className="bg-brand-coral-pink/20 text-brand-coral-pink text-xs font-bold px-3 py-1 rounded-full border border-brand-coral-pink/30">📺 TV Series</span>
               {show.status && (
@@ -115,7 +130,7 @@ export default function ShowDetail() {
             
             <div className="flex flex-wrap gap-3 mb-8">
               {show.genres?.map(g => (
-                <span key={g.id} className="glass-panel px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gradient-to-r hover:from-brand-deep-purple hover:to-brand-coral-pink transition-all cursor-pointer">
+                <span key={g.id} className="glass-panel px-4 py-2 rounded-lg text-sm font-semibold hover:bg-linear-to-r hover:from-brand-deep-purple hover:to-brand-coral-pink transition-all cursor-pointer">
                   {g.name}
                 </span>
               ))}
@@ -135,7 +150,7 @@ export default function ShowDetail() {
                 <a 
                   href={`https://www.youtube.com/watch?v=${show.videos.results[0].key}`}
                   target="_blank" rel="noreferrer"
-                  className="bg-gradient-to-r from-brand-deep-purple to-brand-coral-pink text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-display font-semibold flex items-center gap-2 hover:shadow-[0_0_30px_rgba(132,94,194,0.4)] transition-all active:scale-95"
+                  className="bg-linear-to-r from-brand-deep-purple to-brand-coral-pink text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-display font-semibold flex items-center gap-2 hover:shadow-[0_0_30px_rgba(132,94,194,0.4)] transition-all active:scale-95"
                 >
                   <span className="material-symbols-outlined">play_arrow</span>
                   Watch Trailer
@@ -185,6 +200,8 @@ export default function ShowDetail() {
             </div>
           </div>
         </div>
+
+        <AiRecommendationBlock title={show.name} mediaType="tv" />
 
         {/* User Actions */}
         <div className="mt-10">

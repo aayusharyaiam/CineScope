@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function SearchFilter({ value, onChange, placeholder = 'Search...' }) {
   return (
     <div className="relative w-full max-w-md mb-10">

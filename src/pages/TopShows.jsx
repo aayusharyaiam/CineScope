@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import gsap from 'gsap';
 import { tmdbApi } from '../services/api';
 import MovieCard from '../components/MovieCard';
 import SearchFilter from '../components/SearchFilter';
+import { EmptyState, LoadingState } from '../components/AppState';
 
 export default function TopShows() {
   const [shows, setShows] = useState([]);
@@ -51,19 +52,11 @@ export default function TopShows() {
 
   const renderGrid = (items, ref, cardClass, mediaType, loading, emptyIcon, emptyText, loadingText) => {
     if (loading) {
-      return (
-        <div className="flex flex-col justify-center items-center h-64 gap-4">
-          <div className="w-12 h-12 rounded-full border-4 border-brand-amber-yellow/30 border-t-brand-amber-yellow animate-spin"></div>
-          <p className="text-gray-500 dark:text-gray-400 font-body text-sm animate-pulse">{loadingText}</p>
-        </div>
-      );
+      return <LoadingState title={loadingText} message="Sorting the highest-rated titles..." />;
     }
     if (items.length === 0) {
       return (
-        <div className="flex flex-col justify-center items-center h-64 gap-4">
-          <span className="material-symbols-outlined text-5xl text-gray-400">{emptyIcon}</span>
-          <p className="text-gray-500 dark:text-gray-400 font-body">{emptyText}</p>
-        </div>
+        <EmptyState icon={emptyIcon} title={emptyText} message={q ? 'Try a shorter search or a different title.' : 'The ratings shelf is empty for the moment.'} />
       );
     }
     return (
@@ -89,7 +82,7 @@ export default function TopShows() {
   const filteredMovies = q ? movies.filter(m => (m.title || m.name || '').toLowerCase().includes(q)) : movies;
 
   return (
-    <div className="pt-24 pb-20 px-4 md:px-12 max-w-[1440px] mx-auto min-h-screen relative z-10">
+    <div className="pt-24 pb-20 px-4 md:px-12 max-w-360 mx-auto min-h-screen relative z-10">
       <SearchFilter value={searchQuery} onChange={setSearchQuery} placeholder="Filter shows & movies..." />
 
       {/* Top Rated Shows */}

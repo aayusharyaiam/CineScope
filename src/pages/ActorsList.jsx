@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { tmdbApi } from '../services/api';
 import SearchFilter from '../components/SearchFilter';
+import { EmptyState, LoadingState } from '../components/AppState';
 
 export default function ActorsList() {
   const [actors, setActors] = useState([]);
@@ -42,7 +43,7 @@ export default function ActorsList() {
   }, [loading, actors]);
 
   return (
-    <div className="pt-24 pb-20 px-4 md:px-12 max-w-[1440px] mx-auto min-h-screen relative z-10">
+    <div className="pt-24 pb-20 px-4 md:px-12 max-w-360 mx-auto min-h-screen relative z-10">
       <div className="flex items-end justify-between mb-12">
         <h1 className="font-display text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white flex items-center gap-4">
           <span className="w-10 h-1.5 bg-gradient-to-r from-brand-deep-purple to-brand-pink-purple rounded-full block"></span>
@@ -57,23 +58,21 @@ export default function ActorsList() {
         const filtered = q ? actors.filter(a => (a.name || '').toLowerCase().includes(q)) : actors;
 
         if (loading) return (
-          <div className="flex flex-col justify-center items-center h-64 gap-4">
-            <div className="w-12 h-12 rounded-full border-4 border-brand-deep-purple/30 border-t-brand-deep-purple animate-spin"></div>
-            <p className="text-gray-500 dark:text-gray-400 font-body text-sm animate-pulse">Loading actors...</p>
-          </div>
+          <LoadingState title="Loading actors" message="Finding popular performers..." />
         );
         if (filtered.length === 0) return (
-          <div className="flex flex-col justify-center items-center h-64 gap-4">
-            <span className="material-symbols-outlined text-5xl text-gray-400">person</span>
-            <p className="text-gray-500 dark:text-gray-400 font-body">{q ? 'No actors match your search.' : 'No actors available right now.'}</p>
-          </div>
+          <EmptyState
+            icon="person_search"
+            title={q ? 'No actors match that search' : 'No actors available'}
+            message={q ? 'Try a shorter name or different spelling.' : 'The cast catalog is quiet right now. Try again shortly.'}
+          />
         );
         return (
         <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8">
           {filtered.map((actor) => (
             <Link to={`/actor/${actor.id}`} key={actor.id} className="actor-card group flex flex-col items-center" style={{ opacity: 0 }}>
-              <div className="w-full aspect-[2/3] rounded-2xl overflow-hidden mb-4 shadow-lg border border-gray-200 dark:border-white/5 relative">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+              <div className="w-full aspect-2/3 rounded-2xl overflow-hidden mb-4 shadow-lg border border-gray-200 dark:border-white/5 relative">
+                <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
                 <img 
                   src={actor.profile_path ? `https://image.tmdb.org/t/p/w500${actor.profile_path}` : (actor.fallbackImage || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=500')} 
                   alt={actor.name}

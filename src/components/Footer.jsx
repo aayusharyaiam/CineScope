@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 
 export default function Footer() {
@@ -19,10 +18,10 @@ export default function Footer() {
           <div>
             <h4 className="font-display text-lg text-gray-900 dark:text-[#e7e0e9] mb-4 font-semibold">Explore</h4>
             <ul className="space-y-2 text-gray-500 dark:text-[#ccc3d3] font-body text-sm">
-              <li><Link to="/movies" className="hover:text-brand-deep-purple dark:hover:text-[#d5baff] transition-colors">Movies</Link></li>
+              <li><Link to="/" className="hover:text-brand-deep-purple dark:hover:text-[#d5baff] transition-colors">Movies</Link></li>
               <li><Link to="/shows" className="hover:text-brand-deep-purple dark:hover:text-[#d5baff] transition-colors">TV Shows</Link></li>
-              <li><Link to="/new" className="hover:text-brand-deep-purple dark:hover:text-[#d5baff] transition-colors">New Releases</Link></li>
-              <li><Link to="/top" className="hover:text-brand-deep-purple dark:hover:text-[#d5baff] transition-colors">Top Rated</Link></li>
+              <li><Link to="/shows/new" className="hover:text-brand-deep-purple dark:hover:text-[#d5baff] transition-colors">New Releases</Link></li>
+              <li><Link to="/shows/top" className="hover:text-brand-deep-purple dark:hover:text-[#d5baff] transition-colors">Top Rated</Link></li>
             </ul>
           </div>
           
@@ -30,9 +29,9 @@ export default function Footer() {
             <h4 className="font-display text-lg text-gray-900 dark:text-[#e7e0e9] mb-4 font-semibold">Account</h4>
             <ul className="space-y-2 text-gray-500 dark:text-[#ccc3d3] font-body text-sm">
               <li><Link to="/watchlist" className="hover:text-brand-deep-purple dark:hover:text-[#d5baff] transition-colors">My Watchlist</Link></li>
-              <li><Link to="/settings" className="hover:text-brand-deep-purple dark:hover:text-[#d5baff] transition-colors">Settings</Link></li>
               <li><Link to="/profile" className="hover:text-brand-deep-purple dark:hover:text-[#d5baff] transition-colors">Profile</Link></li>
-              <li><Link to="/help" className="hover:text-brand-deep-purple dark:hover:text-[#d5baff] transition-colors">Help Center</Link></li>
+              <li><Link to="/support" className="hover:text-brand-deep-purple dark:hover:text-[#d5baff] transition-colors">Support</Link></li>
+              <li><Link to="/onboarding" className="hover:text-brand-deep-purple dark:hover:text-[#d5baff] transition-colors">Taste Profile</Link></li>
             </ul>
           </div>
           
