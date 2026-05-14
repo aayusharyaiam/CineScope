@@ -1,31 +1,53 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { InlineNotice } from '../components/AppState';
+
+const authErrorMessages = {
+  'auth/email-already-in-use': 'That email already has a CineScope account. Try logging in instead.',
+  'auth/invalid-credential': 'The email or password does not match our records.',
+  'auth/invalid-email': 'Use a valid email address to continue.',
+  'auth/popup-closed-by-user': 'Google sign-in was closed before it finished.',
+  'auth/too-many-requests': 'Too many attempts in a short time. Give it a moment, then try again.',
+  'auth/weak-password': 'Choose a stronger password with at least 6 characters.'
+};
+
+const getFriendlyAuthError = (error) => (
+  authErrorMessages[error?.code] || 'We could not complete sign-in right now. Check your details and try again.'
+);
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, signup, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Where the user came from (e.g. a movie page that required auth)
+  const from = location.state?.from || '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
       if (isLogin) {
         await login(email, password);
+        navigate(from, { replace: true });
       } else {
-        await signup(email, password);
+        await signup(email, password, displayName);
+        navigate('/onboarding', { state: { promptSiteReview: 'signup' } });
       }
-      navigate('/profile');
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to authenticate');
+      setError(getFriendlyAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -34,12 +56,13 @@ export default function Auth() {
   const handleGoogleSignIn = async () => {
     try {
       setError('');
+      setSuccess('');
       setLoading(true);
       await loginWithGoogle();
-      navigate('/profile');
+      navigate(from, { replace: true });
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to log in with Google');
+      setError(getFriendlyAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -97,10 +120,21 @@ export default function Auth() {
 
           {/* Form Area */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            {success && (
+              <InlineNotice
+                icon="check_circle"
+                tone="success"
+                title="You're in!"
+                message={success}
+              />
+            )}
             {error && (
-              <div className="bg-red-500/10 border border-red-500/50 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm font-body text-center">
-                {error}
-              </div>
+              <InlineNotice
+                icon="lock"
+                tone="danger"
+                title="Sign-in needs attention"
+                message={error}
+              />
             )}
             <div className="relative group">
               <input 
@@ -116,6 +150,22 @@ export default function Auth() {
                 Email Address
               </label>
             </div>
+
+            {!isLogin && (
+              <div className="relative group">
+                <input
+                  id="displayName"
+                  type="text"
+                  value={displayName}
+                  onChange={e => setDisplayName(e.target.value)}
+                  className="block w-full bg-gray-50 dark:bg-[#211e25]/80 border border-gray-300 dark:border-gray-600/50 rounded-xl px-4 pt-6 pb-2 text-gray-900 dark:text-white font-body focus:outline-none focus:border-brand-primary/70 focus:bg-white dark:focus:bg-[#211e25] focus:ring-1 focus:ring-brand-primary/50 peer transition-all duration-300 placeholder-transparent"
+                  placeholder="Display Name"
+                />
+                <label htmlFor="displayName" className="absolute left-4 top-4 text-gray-500 dark:text-gray-400 font-body transition-all duration-300 transform -translate-y-2 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-2 peer-focus:text-brand-deep-purple dark:peer-focus:text-brand-primary z-10 pointer-events-none">
+                  Display Name
+                </label>
+              </div>
+            )}
 
             <div className="relative group">
               <input 

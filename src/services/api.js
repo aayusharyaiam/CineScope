@@ -7,6 +7,71 @@ const OMDB_API_KEY = import.meta.env.VITE_OMDB_API_KEY;
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const OMDB_BASE_URL = 'https://www.omdbapi.com';
+const TMDB_CACHE_TTL = 15 * 60 * 1000;
+const OMDB_CACHE_TTL = 24 * 60 * 60 * 1000;
+const GEMINI_CACHE_TTL = 60 * 60 * 1000;
+
+const responseCache = new Map();
+const inFlightRequests = new Map();
+
+const getCachedValue = (cacheKey, ttl) => {
+  const entry = responseCache.get(cacheKey);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > ttl) {
+    responseCache.delete(cacheKey);
+    return null;
+  }
+  return entry.value;
+};
+
+const setCachedValue = (cacheKey, value) => {
+  responseCache.set(cacheKey, {
+    timestamp: Date.now(),
+    value
+  });
+  return value;
+};
+
+const withCache = async (cacheKey, ttl, fetcher) => {
+  const cached = getCachedValue(cacheKey, ttl);
+  if (cached !== null) return cached;
+
+  if (inFlightRequests.has(cacheKey)) {
+    return inFlightRequests.get(cacheKey);
+  }
+
+  const request = Promise.resolve()
+    .then(fetcher)
+    .then(result => setCachedValue(cacheKey, result))
+    .finally(() => {
+      inFlightRequests.delete(cacheKey);
+    });
+
+  inFlightRequests.set(cacheKey, request);
+  return request;
+};
+
+const fetchJson = async (url, { timeoutMs = 8000, cacheKey = '', ttl = 0, requestInit = {} } = {}) => {
+  if (cacheKey && ttl > 0) {
+    return withCache(cacheKey, ttl, async () => {
+      const response = await fetchJson(url, { timeoutMs, requestInit });
+      return response;
+    });
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, { ...requestInit, signal: controller.signal });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    return await response.json();
+  } finally {
+    clearTimeout(timeout);
+  }
+};
 
 // Proxy URLs to bypass ISP blocking of TMDB
 const PROXY_URLS = [
@@ -18,25 +83,34 @@ const PROXY_URLS = [
 // Smart TMDB fetch — tries direct, then proxies
 const tmdbFetch = async (path) => {
   const directUrl = `${TMDB_BASE_URL}${path}${path.includes('?') ? '&' : '?'}api_key=${TMDB_API_KEY}`;
+  const cacheKey = `tmdb:${directUrl}`;
 
-  for (const proxy of PROXY_URLS) {
-    try {
-      const url = proxy ? `${proxy}${encodeURIComponent(directUrl)}` : directUrl;
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 3000); // 3s timeout
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeout);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (proxy) console.log(`[TMDB] Fetched via proxy: ${proxy.substring(0, 30)}...`);
-      return data;
-    } catch (err) {
-      console.warn(`[TMDB] ${proxy ? 'Proxy' : 'Direct'} failed for ${path}:`, err.message);
-      continue;
+  return withCache(cacheKey, TMDB_CACHE_TTL, async () => {
+    for (const proxy of PROXY_URLS) {
+      try {
+        const url = proxy ? `${proxy}${encodeURIComponent(directUrl)}` : directUrl;
+        const data = await fetchJson(url, { timeoutMs: 3500 });
+        if (proxy) console.log(`[TMDB] Fetched via proxy: ${proxy.substring(0, 30)}...`);
+        return data;
+      } catch (err) {
+        console.warn(`[TMDB] ${proxy ? 'Proxy' : 'Direct'} failed for ${path}:`, err.message);
+      }
     }
-  }
-  throw new Error('All TMDB fetch attempts failed (direct + proxies)');
+    throw new Error('All TMDB fetch attempts failed (direct + proxies)');
+  });
 };
+
+const omdbFetchByQuery = async (params, ttl = OMDB_CACHE_TTL) => {
+  const queryString = new URLSearchParams({
+    ...params,
+    apikey: OMDB_API_KEY
+  }).toString();
+  const url = `${OMDB_BASE_URL}/?${queryString}`;
+  return fetchJson(url, { timeoutMs: 8000, cacheKey: `omdb:${queryString}`, ttl });
+};
+
+const omdbFetchByTitle = (title, year) => omdbFetchByQuery({ t: title, ...(year ? { y: year } : {}) });
+const omdbFetchById = (imdbId) => omdbFetchByQuery({ i: imdbId });
 
 // Helper function to fetch dynamic list from Gemini and details from OMDB
 const fetchDynamicFallback = async (type) => {
@@ -62,14 +136,18 @@ const fetchDynamicFallback = async (type) => {
   if (type === 'actors') prompt = "List 12 currently popular Hollywood actors. Return ONLY a valid JSON array of objects with 'name'.";
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
-      })
+    const data = await fetchJson(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      timeoutMs: 10000,
+      cacheKey: `gemini:fallback:${today}:${type}`,
+      ttl: GEMINI_CACHE_TTL,
+      requestInit: {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      }
     });
-    const data = await response.json();
     const text = data.candidates[0].content.parts[0].text;
     const jsonStr = text.match(/\[.*\]/s);
     
@@ -102,8 +180,7 @@ const fetchDynamicFallback = async (type) => {
 
       // Fetch OMDB for movies/shows
       const omdbPromises = items.map(async (item) => {
-        const omdbRes = await fetch(`${OMDB_BASE_URL}/?t=${encodeURIComponent(item.title)}&y=${item.year}&apikey=${OMDB_API_KEY}`);
-        const omdbData = await omdbRes.json();
+        const omdbData = await omdbFetchByTitle(item.title, item.year);
         if (omdbData.Response === "True") {
           return {
             id: omdbData.imdbID,
@@ -133,73 +210,6 @@ const fetchDynamicFallback = async (type) => {
     }
   } catch (err) {
     console.error("Dynamic Fallback failed:", err);
-  }
-  return null;
-};
-
-// Pick of the Day — Gemini picks a random movie/series, details from OMDB, cached daily
-export const getPickOfTheDay = async () => {
-  const today = new Date().toISOString().split('T')[0];
-  const cacheKey = `${today}_pick_of_day`;
-  const docRef = doc(db, 'daily_fallbacks', cacheKey);
-
-  try {
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      console.log(`[Cache Hit] Pick of the Day from Firebase for ${today}`);
-      return docSnap.data();
-    }
-  } catch (err) {
-    console.error("Firebase Cache Read Error (pick):", err);
-  }
-
-  console.log(`[Cache Miss] Generating Pick of the Day for ${today}...`);
-
-  try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: `Pick one random highly-rated movie OR web-series that you think people should watch today. Be creative and surprising — don't always pick the same obvious ones. Return ONLY a valid JSON object (not an array) with these fields: "title" (string), "year" (string), "type" (either "movie" or "series"), "tagline" (a short catchy 1-line tagline), "whyWatch" (2-3 sentences on why someone should watch it today).` }] }]
-      })
-    });
-    const data = await response.json();
-    const text = data.candidates[0].content.parts[0].text;
-    const jsonStr = text.match(/\{.*\}/s);
-
-    if (jsonStr) {
-      const pick = JSON.parse(jsonStr[0]);
-
-      // Fetch details from OMDB
-      const omdbRes = await fetch(`${OMDB_BASE_URL}/?t=${encodeURIComponent(pick.title)}&y=${pick.year}&apikey=${OMDB_API_KEY}`);
-      const omdbData = await omdbRes.json();
-
-      const pickData = {
-        title: omdbData.Response === "True" ? omdbData.Title : pick.title,
-        year: omdbData.Response === "True" ? omdbData.Year : pick.year,
-        type: pick.type,
-        tagline: pick.tagline,
-        whyWatch: pick.whyWatch,
-        poster: omdbData.Response === "True" && omdbData.Poster !== "N/A" ? omdbData.Poster : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=800',
-        rating: omdbData.Response === "True" && omdbData.imdbRating !== "N/A" ? omdbData.imdbRating : 'N/A',
-        genre: omdbData.Response === "True" ? omdbData.Genre : 'Unknown',
-        runtime: omdbData.Response === "True" ? omdbData.Runtime : 'N/A',
-        plot: omdbData.Response === "True" ? omdbData.Plot : pick.whyWatch,
-        director: omdbData.Response === "True" ? omdbData.Director : 'N/A',
-        imdbID: omdbData.Response === "True" ? omdbData.imdbID : null,
-      };
-
-      try {
-        await setDoc(docRef, pickData);
-        console.log(`[Cache Saved] Pick of the Day saved for ${today}`);
-      } catch (e) {
-        console.error("Failed to save pick to cache", e);
-      }
-
-      return pickData;
-    }
-  } catch (err) {
-    console.error("Pick of the Day generation failed:", err);
   }
   return null;
 };
@@ -314,8 +324,7 @@ export const tmdbApi = {
       
       // Fallback to OMDB if TMDB is blocked
       try {
-        const omdbRes = await fetch(`${OMDB_BASE_URL}/?s=${encodeURIComponent(query)}&apikey=${OMDB_API_KEY}`);
-        const omdbData = await omdbRes.json();
+        const omdbData = await omdbFetchByQuery({ s: query });
         
         if (omdbData.Response === "True" && omdbData.Search) {
           console.log("Successfully fetched from OMDB fallback");
@@ -338,6 +347,29 @@ export const tmdbApi = {
         results: [
           { id: 27205, title: `Result for "${query}" (Final Fallback)`, release_date: '2010-07-15', vote_average: 8.3, poster_path: null, fallbackImage: 'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?auto=format&fit=crop&q=80&w=500' }
         ]
+      };
+    }
+  },
+
+  // Search TV shows
+  searchShows: async (query) => {
+    try {
+      return await tmdbFetch(`/search/tv?query=${encodeURIComponent(query)}`);
+    } catch (error) {
+      console.error("TMDB API Error (searchShows):", error);
+      return { results: [] };
+    }
+  },
+
+  // Search movies and shows together
+  searchMulti: async (query) => {
+    try {
+      return await tmdbFetch(`/search/multi?query=${encodeURIComponent(query)}`);
+    } catch (error) {
+      console.error("TMDB API Error (searchMulti):", error);
+      const movieResults = await tmdbApi.searchMovies(query);
+      return {
+        results: (movieResults.results || []).map(item => ({ ...item, media_type: 'movie' }))
       };
     }
   },
@@ -410,31 +442,75 @@ export const omdbApi = {
   // OMDB requires IMDb ID, which we can get from TMDB movie details
   getRatings: async (imdbId) => {
     if (!imdbId) return null;
-    const res = await fetch(`${OMDB_BASE_URL}/?i=${imdbId}&apikey=${OMDB_API_KEY}`);
-    return res.json();
+    return omdbFetchById(imdbId);
   }
+};
+
+const extractJson = (text, fallback) => {
+  if (!text) return fallback;
+  const match = text.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
+  if (!match) return fallback;
+  try {
+    return JSON.parse(match[0]);
+  } catch (error) {
+    console.error("Gemini JSON parse error:", error);
+    return fallback;
+  }
+};
+
+const geminiGenerate = async (prompt) => {
+  if (!GEMINI_API_KEY) {
+    throw new Error('Missing VITE_GEMINI_API_KEY');
+  }
+
+  const data = await fetchJson(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    timeoutMs: 10000,
+    cacheKey: `gemini:prompt:${prompt}`,
+    ttl: GEMINI_CACHE_TTL,
+    requestInit: {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    }
+  });
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 };
 
 // Gemini API Recommendations
 export const geminiApi = {
   getRecommendations: async (preferences) => {
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: `Based on the following user preferences, recommend 5 movies. Respond ONLY with a valid JSON array of objects containing 'title' and 'reason'. Preferences: ${preferences}` }]
-          }]
-        })
-      });
-      const data = await response.json();
-      const text = data.candidates[0].content.parts[0].text;
-      const jsonStr = text.match(/\[.*\]/s);
-      if (jsonStr) {
-        return JSON.parse(jsonStr[0]);
-      }
+      const text = await geminiGenerate(`Based on the following user preferences, recommend 5 movies. Respond ONLY with a valid JSON array of objects containing "title" and "reason". Preferences: ${preferences}`);
+      return extractJson(text, []);
+    } catch (error) {
+      console.error("Gemini API Error:", error);
       return [];
+    }
+  },
+
+  getPersonalizedRecommendations: async ({ favoriteTitles = [], favoriteGenres = [], watchHistory = [], recentRatings = [], contextTitle = '' }) => {
+    try {
+      const prompt = `
+You are CineBrain, a movie and web series recommendation engine.
+Recommend 10 movies or web series this user is likely to love.
+
+Favorite movies/shows: ${favoriteTitles.join(', ') || 'Unknown'}
+Favorite genres: ${favoriteGenres.join(', ') || 'Unknown'}
+Watch history: ${watchHistory.join(', ') || 'None yet'}
+Recently rated titles: ${recentRatings.join(', ') || 'None yet'}
+${contextTitle ? `Current title context: ${contextTitle}` : ''}
+
+Return ONLY a valid JSON array. Each item must have:
+- "title": exact movie or TV show title
+- "mediaType": "movie" or "tv"
+- "reason": one concise personalized reason under 22 words
+No markdown. No extra text.
+`;
+      const text = await geminiGenerate(prompt);
+      const items = extractJson(text, []);
+      return Array.isArray(items) ? items : [];
     } catch (error) {
       console.error("Gemini API Error:", error);
       return [];

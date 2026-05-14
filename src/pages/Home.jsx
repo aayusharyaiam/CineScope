@@ -1,9 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import MovieCard from '../components/MovieCard';
-import { tmdbApi, getPickOfTheDay } from '../services/api';
+import { tmdbApi } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { getUserRecommendations } from '../services/aiRecommendations';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,9 +15,11 @@ export default function Home() {
   const heroRef = useRef(null);
   const rowRef = useRef(null);
   const [trendingMovies, setTrendingMovies] = useState([]);
-  const [pickOfDay, setPickOfDay] = useState(null);
+  const [aiPicks, setAiPicks] = useState([]);
+  const [loadingAiPicks, setLoadingAiPicks] = useState(false);
   const [heroSearch, setHeroSearch] = useState('');
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   
   // Drag-to-scroll using refs (avoids React state async race conditions)
   const isDragging = useRef(false);
@@ -67,17 +71,33 @@ export default function Home() {
       }
     });
 
-    // Fetch Pick of the Day
-    getPickOfTheDay().then(pick => {
-      if (pick) setPickOfDay(pick);
-    });
-
     // GSAP Hero Animation
     gsap.fromTo(heroRef.current, 
       { opacity: 0, y: 50 },
       { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }
     );
   }, []);
+
+  useEffect(() => {
+    if (!currentUser) {
+      return;
+    }
+
+    let cancelled = false;
+    Promise.resolve()
+      .then(() => {
+        if (!cancelled) setLoadingAiPicks(true);
+        return getUserRecommendations(currentUser.uid, { limit: 8 });
+      })
+      .then(items => {
+        if (!cancelled) setAiPicks(items);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingAiPicks(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [currentUser]);
 
   useEffect(() => {
     if (trendingMovies.length > 0 && rowRef.current) {
@@ -105,8 +125,13 @@ export default function Home() {
         
         <div ref={heroRef} className="relative z-10 w-full max-w-4xl px-4 text-center">
           <h1 className="font-display text-4xl md:text-6xl font-extrabold text-white mb-6 drop-shadow-lg leading-tight">
-            Discover Your Next <br/> Cinematic Journey
+            {currentUser ? `Welcome back, ${currentUser.displayName || 'Cinephile'}` : 'Discover Your Next'} <br/> Cinematic Journey
           </h1>
+          {currentUser && (
+            <p className="text-white/85 text-lg md:text-xl max-w-2xl mx-auto">
+              Your weekly CineBrain picks are ready, tuned from your favorites, ratings, and watch history.
+            </p>
+          )}
           <form onSubmit={(e) => { e.preventDefault(); if (heroSearch.trim()) navigate(`/search?q=${encodeURIComponent(heroSearch.trim())}`); }} className="relative max-w-2xl mx-auto mt-10 glass-panel rounded-full p-2 flex items-center shadow-2xl">
             <span className="material-symbols-outlined text-white/80 ml-4 text-2xl">search</span>
             <input 
@@ -122,6 +147,60 @@ export default function Home() {
           </form>
         </div>
       </section>
+
+      {currentUser && (
+        <section className="mt-16 px-4">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <div className="flex items-center gap-2 text-brand-coral-pink text-xs font-bold uppercase tracking-wider mb-2">
+                <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+                Powered by CineBrain
+              </div>
+              <h2 className="font-display text-3xl md:text-4xl font-bold">Your AI Picks Today</h2>
+            </div>
+            <Link to="/onboarding" className="text-brand-deep-purple dark:text-brand-coral-pink hover:underline text-sm font-semibold">
+              Tune taste profile
+            </Link>
+          </div>
+
+          {loadingAiPicks ? (
+            <div className="flex gap-3 overflow-hidden">
+              {[...Array(5)].map((_, index) => (
+                <div key={index} className="w-50 min-w-50">
+                  <div className="aspect-2/3 rounded-xl bg-white/10 animate-pulse mb-2"></div>
+                  <div className="h-4 rounded bg-white/10 animate-pulse"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex overflow-x-auto gap-3 pb-6 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
+              {aiPicks.map(item => (
+                <div key={`${item.mediaType}_${item.id}`} className="relative">
+                  <MovieCard
+                    id={item.id}
+                    title={item.title}
+                    year={item.year}
+                    rating={item.rating}
+                    imageUrl={item.imageUrl}
+                    mediaType={item.mediaType}
+                  />
+                  <div className="mt-2 w-50 text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                    {item.reason}
+                  </div>
+                </div>
+              ))}
+              {aiPicks.length === 0 && (
+                <div className="glass-panel rounded-2xl p-6 w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <p className="text-gray-600 dark:text-gray-300">Add a few favorites to unlock better personalized recommendations.</p>
+                  <Link to="/onboarding" className="min-h-11 px-5 rounded-xl bg-brand-deep-purple text-white font-bold inline-flex items-center justify-center">
+                    Start setup
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Trending Today */}
       <section className="mt-16">
@@ -164,60 +243,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      {/* Pick of the Day */}
-      {pickOfDay && (
-        <section className="mt-16 px-4">
-          <div className="flex items-center gap-3 mb-8">
-            <span className="material-symbols-outlined text-brand-amber-yellow text-3xl">auto_awesome</span>
-            <h2 className="font-display text-3xl md:text-4xl font-bold">Pick of the Day</h2>
-            <span className="glass-panel text-xs font-bold px-3 py-1 rounded-full text-brand-coral-pink">AI Curated</span>
-          </div>
-          <div className="relative rounded-2xl overflow-hidden shadow-2xl group">
-            <div className="flex flex-col md:flex-row">
-              {/* Poster */}
-              <div className="w-full md:w-70 shrink-0">
-                <img 
-                  src={pickOfDay.poster} 
-                  alt={pickOfDay.title} 
-                  className="w-full h-100 md:h-full object-cover"
-                />
-              </div>
-              {/* Details */}
-              <div className="flex-1 glass-panel p-8 md:p-10 flex flex-col justify-center">
-                <div className="flex flex-wrap items-center gap-3 mb-4">
-                  <span className="bg-brand-deep-purple/80 text-white text-xs font-bold px-3 py-1 rounded-full">
-                    {pickOfDay.type === 'series' ? '📺 Web Series' : '🎬 Movie'}
-                  </span>
-                  <span className="text-brand-amber-yellow font-bold text-sm flex items-center gap-1">
-                    ★ {pickOfDay.rating}
-                  </span>
-                  <span className="text-gray-400 text-sm">{pickOfDay.year}</span>
-                  <span className="text-gray-400 text-sm">•</span>
-                  <span className="text-gray-400 text-sm">{pickOfDay.runtime}</span>
-                </div>
-                <h3 className="font-display text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                  {pickOfDay.title}
-                </h3>
-                <p className="text-brand-coral-pink font-semibold italic text-lg mb-4">
-                  "{pickOfDay.tagline}"
-                </p>
-                <p className="text-gray-600 dark:text-gray-300 font-body leading-relaxed mb-4 max-w-2xl">
-                  {pickOfDay.plot}
-                </p>
-                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-semibold">Director: <span className="text-gray-900 dark:text-white">{pickOfDay.director}</span></span>
-                  <span>•</span>
-                  <span className="font-semibold">Genre: <span className="text-gray-900 dark:text-white">{pickOfDay.genre}</span></span>
-                </div>
-                <p className="mt-6 text-sm text-brand-deep-purple dark:text-brand-coral-pink font-semibold">
-                  🧠 Why watch today: <span className="font-normal text-gray-600 dark:text-gray-300">{pickOfDay.whyWatch}</span>
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Genre Pills Section */}
       <section className="py-8 px-4 mt-8">

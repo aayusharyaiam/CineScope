@@ -1,30 +1,53 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { tmdbApi } from '../services/api';
 import MovieCard from '../components/MovieCard';
+import { EmptyState, ErrorState, LoadingState } from '../components/AppState';
 
 export default function Actor() {
   const { id } = useParams();
   const [actor, setActor] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
 
   useEffect(() => {
     // If no ID provided, use a popular actor ID for demonstration (e.g. Leonardo DiCaprio 112)
     const fetchActor = async () => {
       setLoading(true);
-      const data = await tmdbApi.getPersonDetails(id || 112);
-      setActor(data);
-      setLoading(false);
+      setFetchError('');
+      try {
+        const data = await tmdbApi.getPersonDetails(id || 112);
+        setActor(data);
+      } catch (error) {
+        console.error('Error fetching actor details:', error);
+        setFetchError('This profile could not be loaded right now.');
+      } finally {
+        setLoading(false);
+      }
     };
     fetchActor();
   }, [id]);
 
   if (loading) {
-    return <div className="text-center py-20 text-gray-900 dark:text-white font-display">Loading...</div>;
+    return (
+      <div className="px-4 py-12">
+        <LoadingState title="Loading profile" message="Gathering biography and filmography..." />
+      </div>
+    );
   }
 
-  if (!actor || actor.error) {
-    return <div className="text-center py-20 text-gray-900 dark:text-white font-display">Actor profile unavailable.</div>;
+  if (!actor || actor.error || fetchError) {
+    return (
+      <div className="px-4 py-12 min-h-[60vh] flex items-center justify-center">
+        <ErrorState
+          title="Profile unavailable"
+          message={fetchError || 'This actor or director profile is missing from the catalog right now.'}
+          actionLabel="Browse actors"
+          actionTo="/actors"
+          className="w-full max-w-2xl"
+        />
+      </div>
+    );
   }
 
   // Combine movie and TV credits
@@ -112,7 +135,7 @@ export default function Actor() {
             </div>
             
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {knownFor.map(credit => (
+              {knownFor.length > 0 ? knownFor.map(credit => (
                 <MovieCard 
                   key={`${credit.media_type}-${credit.id}`}
                   id={credit.id}
@@ -121,7 +144,11 @@ export default function Actor() {
                   rating={credit.vote_average?.toFixed(1)}
                   imageUrl={credit.poster_path ? `https://image.tmdb.org/t/p/w500${credit.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Poster'}
                 />
-              ))}
+              )) : (
+                <div className="col-span-full">
+                  <EmptyState title="Known-for credits are unavailable" message="This profile does not have highlighted titles yet." />
+                </div>
+              )}
             </div>
           </section>
 
@@ -135,7 +162,7 @@ export default function Actor() {
             </div>
 
             <div className="flex flex-col gap-3">
-              {filmography.slice(0, 10).map((credit, idx) => (
+              {filmography.length > 0 ? filmography.slice(0, 10).map((credit, idx) => (
                 <Link to={`/movie/${credit.id}`} key={`${credit.media_type}-${credit.id}-${idx}`} className="group flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-gray-50/80 dark:bg-[#100d13]/50 border border-gray-200 dark:border-white/5 hover:bg-white dark:hover:bg-[#211e25]/80 hover:border-gray-300 dark:hover:border-white/10 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden backdrop-blur-sm">
                   <div className="absolute inset-0 bg-gradient-to-r from-brand-deep-purple/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                   
@@ -155,7 +182,9 @@ export default function Actor() {
                     </span>
                   </div>
                 </Link>
-              ))}
+              )) : (
+                <EmptyState title="Filmography unavailable" message="No credits are listed for this profile yet." />
+              )}
             </div>
           </section>
 

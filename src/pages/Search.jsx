@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { tmdbApi, geminiApi, GENRE_MAP } from '../services/api';
 import MovieCard from '../components/MovieCard';
+import { EmptyState, InlineNotice, LoadingState } from '../components/AppState';
 
 export default function Search() {
   const [searchParams] = useSearchParams();
@@ -33,7 +34,7 @@ export default function Search() {
           const enrichedResults = (await Promise.all(tmdbPromises)).filter(Boolean);
           setResults(enrichedResults);
         } else {
-          setError("CineBrain couldn't generate recommendations. Try different keywords.");
+          setError("CineBrain could not find a confident match. Try a genre, mood, actor, or a favorite title.");
         }
       } else {
         const data = await tmdbApi.searchMovies(searchQuery);
@@ -43,7 +44,7 @@ export default function Search() {
       }
     } catch (err) {
       console.error(err);
-      setError("An error occurred during search.");
+      setError("Search is having trouble reaching the catalog. Try again in a moment.");
     } finally {
       setLoading(false);
     }
@@ -65,7 +66,7 @@ export default function Search() {
       }
     } catch (err) {
       console.error(err);
-      setError("Failed to discover movies for this genre.");
+      setError("This genre could not be loaded right now. Try another genre or refresh the page.");
     } finally {
       setLoading(false);
     }
@@ -75,12 +76,14 @@ export default function Search() {
   useEffect(() => {
     const q = searchParams.get('q');
     const genre = searchParams.get('genre');
-    if (genre) {
-      executeGenreSearch(genre);
-    } else if (q) {
-      setQuery(q);
-      executeSearch(q, false);
-    }
+    Promise.resolve().then(() => {
+      if (genre) {
+        executeGenreSearch(genre);
+      } else if (q) {
+        setQuery(q);
+        executeSearch(q, false);
+      }
+    });
   }, [searchParams, executeSearch, executeGenreSearch]);
 
   const handleSearch = async (e) => {
@@ -167,14 +170,21 @@ export default function Search() {
 
       {/* Results Section */}
       <div className="max-w-360 mx-auto">
-        {error && <p className="text-center text-brand-error mb-8">{error}</p>}
+        {error && (
+          <div className="mb-8">
+            <InlineNotice
+              icon="wifi_off"
+              tone="danger"
+              title="Search paused"
+              message={error}
+              actionLabel="Try again"
+              onAction={() => activeGenre ? executeGenreSearch(activeGenre) : executeSearch(query, isAiMode)}
+            />
+          </div>
+        )}
         
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 animate-pulse">
-            {[...Array(10)].map((_, i) => (
-              <div key={i} className="aspect-2/3 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
-            ))}
-          </div>
+          <LoadingState title="Searching the catalog" message={isAiMode ? 'CineBrain is comparing taste signals...' : 'Looking through movies and shows...'} />
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {results.map(movie => (
@@ -203,9 +213,11 @@ export default function Search() {
         )}
         
         {!loading && results.length === 0 && !error && query && (
-          <div className="text-center py-20 text-gray-500">
-            No results found. Try a different search.
-          </div>
+          <EmptyState
+            title="No matching titles yet"
+            message="Try a shorter phrase, a different spelling, or switch CineBrain mode on for mood-based recommendations."
+            className="mt-8"
+          />
         )}
       </div>
     </div>
