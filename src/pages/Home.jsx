@@ -144,7 +144,7 @@ export default function Home() {
         </div>
         <div 
           ref={rowRef} 
-          className={`flex overflow-x-auto gap-3 pb-6 px-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none ${dragCursor}`}
+          className={`flex overflow-x-auto gap-3 pb-6 px-4 snap-x scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none ${dragCursor}`}
           onMouseDown={handleMouseDown}
           onMouseLeave={handleMouseLeave}
           onMouseUp={handleMouseUp}
