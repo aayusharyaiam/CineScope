@@ -120,7 +120,7 @@ export default function Profile() {
         <section className="lg:col-span-8 flex flex-col gap-6">
           
           {/* Tab Navigation */}
-          <div className="flex border-b border-gray-200 dark:border-white/10 gap-8 overflow-x-auto hide-scrollbar">
+          <div className="flex border-b border-gray-200 dark:border-white/10 gap-8 overflow-x-auto">
             {['history', 'watchlist', 'reviews', 'favorites'].map((tab) => (
               <button 
                 key={tab}

@@ -194,7 +194,7 @@ export default function MovieDetail() {
                 </button>
               </div>
             </div>
-            <div id="cast-scroll" className="flex overflow-x-auto gap-6 pb-6 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none]">
+            <div id="cast-scroll" className="flex overflow-x-auto gap-6 pb-6 scroll-smooth [-ms-overflow-style:none]">
               {movie.credits.cast.slice(0, 10).map(actor => {
                 const actorProfileUrl = actor.profile_path 
                   ? `https://image.tmdb.org/t/p/w185${actor.profile_path}` 
