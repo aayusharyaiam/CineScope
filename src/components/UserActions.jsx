@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from './Toast';
 import { getUserMediaEntry, setUserMediaEntry, removeUserMediaEntry } from '../services/userMedia';
 
 export default function UserActions({ mediaType, mediaId, title, posterUrl }) {
   const { currentUser } = useAuth();
+  const { addToast } = useToast();
   const [entry, setEntry] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [showRatingPopup, setShowRatingPopup] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
   const [selectedRating, setSelectedRating] = useState(0);
-  const [toastMessage, setToastMessage] = useState('');
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -50,15 +51,14 @@ export default function UserActions({ mediaType, mediaId, title, posterUrl }) {
 
     if (entry?.status === 'watchlist') {
       setEntry(null);
-      setToastMessage('Removed from Watchlist');
+      addToast('Removed from Watchlist');
       removeUserMediaEntry(currentUser.uid, mediaType, mediaId);
     } else {
       const newEntry = { title, posterUrl, status: 'watchlist', addedAt: entry?.addedAt || Date.now(), rating: entry?.rating || 0 };
       setEntry(prev => ({ ...prev, ...newEntry }));
-      setToastMessage('Added to Watchlist');
+      addToast('Added to Watchlist');
       setUserMediaEntry(currentUser.uid, mediaType, mediaId, newEntry);
     }
-    setTimeout(() => setToastMessage(''), 3000);
   };
 
   const handleFavoriteClick = () => {
@@ -75,9 +75,8 @@ export default function UserActions({ mediaType, mediaId, title, posterUrl }) {
     };
     
     setEntry(prev => ({ ...prev, ...newEntry }));
-    setToastMessage(!isFav ? 'Added to Favorites ❤️' : 'Removed from Favorites');
+    addToast(!isFav ? 'Added to Favorites' : 'Removed from Favorites', 'favorite');
     setUserMediaEntry(currentUser.uid, mediaType, safeMediaId, newEntry);
-    setTimeout(() => setToastMessage(''), 3000);
   };
 
   const handleWatchedClick = () => {
@@ -96,9 +95,8 @@ export default function UserActions({ mediaType, mediaId, title, posterUrl }) {
   const revertToWatchlist = async () => {
     const newEntry = { ...entry, status: 'watchlist', rating: 0 };
     setEntry(newEntry);
-    setToastMessage('Moved back to Watchlist');
+    addToast('Moved back to Watchlist');
     setUserMediaEntry(currentUser.uid, mediaType, mediaId, newEntry);
-    setTimeout(() => setToastMessage(''), 3000);
   };
 
   const submitRating = async () => {
@@ -112,11 +110,10 @@ export default function UserActions({ mediaType, mediaId, title, posterUrl }) {
     // Optimistic UI Update
     setEntry(prev => ({ ...prev, ...newEntry }));
     setShowRatingPopup(false);
-    setToastMessage('Rating saved successfully!');
+    addToast('Rating saved successfully!');
     
     // Background save
     setUserMediaEntry(currentUser.uid, mediaType, mediaId, newEntry);
-    setTimeout(() => setToastMessage(''), 3000);
   };
 
   const skipRating = async () => {
@@ -130,11 +127,10 @@ export default function UserActions({ mediaType, mediaId, title, posterUrl }) {
     // Optimistic UI Update
     setEntry(prev => ({ ...prev, ...newEntry }));
     setShowRatingPopup(false);
-    setToastMessage('Marked as watched!');
+    addToast('Marked as watched!');
     
     // Background save
     setUserMediaEntry(currentUser.uid, mediaType, mediaId, newEntry);
-    setTimeout(() => setToastMessage(''), 3000);
   };
 
   const isInWatchlist = entry?.status === 'watchlist';
@@ -302,15 +298,6 @@ export default function UserActions({ mediaType, mediaId, title, posterUrl }) {
                 Maybe Later
               </button>
             </div>
-          </div>
-        </div>
-      )}
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] animate-fade-in">
-          <div className="bg-brand-deep-purple/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-[0_10px_30px_rgba(132,94,194,0.3)] font-body text-sm font-semibold flex items-center gap-2 border border-white/10">
-            <span className="material-symbols-outlined text-[18px]">check_circle</span>
-            {toastMessage}
           </div>
         </div>
       )}

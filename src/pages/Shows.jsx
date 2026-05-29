@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { tmdbApi } from '../services/api';
 import MovieCard from '../components/MovieCard';
 import SearchFilter from '../components/SearchFilter';
+import { CardSkeleton } from '../components/Skeleton';
 
 export default function Shows() {
   const [shows, setShows] = useState([]);
@@ -57,12 +58,7 @@ export default function Shows() {
 
   const renderGrid = (items, ref, cardClass, mediaType, loading, emptyIcon, emptyText, loadingText) => {
     if (loading) {
-      return (
-        <div className="flex flex-col justify-center items-center h-64 gap-4">
-          <div className="w-12 h-12 rounded-full border-4 border-brand-coral-pink/30 border-t-brand-coral-pink animate-spin"></div>
-          <p className="text-gray-500 dark:text-gray-400 font-body text-sm animate-pulse">{loadingText}</p>
-        </div>
-      );
+      return <CardSkeleton count={10} fluid={true} />;
     }
     if (items.length === 0) {
       return (
@@ -83,6 +79,7 @@ export default function Shows() {
               rating={item.vote_average ? item.vote_average.toFixed(1) : 'NR'}
               imageUrl={item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : (item.fallbackImage || 'https://via.placeholder.com/500x750?text=No+Poster')}
               mediaType={mediaType}
+              fluid={true}
             />
           </div>
         ))}

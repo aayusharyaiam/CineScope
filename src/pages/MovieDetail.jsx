@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { tmdbApi, omdbApi } from '../services/api';
 import UserActions from '../components/UserActions';
+import ImageWithFallback from '../components/ImageWithFallback';
+import { DetailSkeleton } from '../components/Skeleton';
 
 export default function MovieDetail() {
   const { id } = useParams();
@@ -30,11 +32,20 @@ export default function MovieDetail() {
   }, [id]);
 
   if (loading) {
-    return <div className="text-center py-20 text-white font-display">Loading...</div>;
+    return <DetailSkeleton />;
   }
 
   if (!movie) {
-    return <div className="text-center py-20 text-white font-display">Movie not found.</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+        <span className="material-symbols-outlined text-6xl text-brand-coral-pink/60 mb-4">search_off</span>
+        <h2 className="font-display text-2xl font-bold text-white mb-2">Movie not found</h2>
+        <p className="text-gray-400 mb-6">We couldn't find the movie you're looking for.</p>
+        <Link to="/" className="bg-gradient-to-r from-brand-deep-purple to-brand-coral-pink text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-[0_0_30px_rgba(132,94,194,0.4)] transition-all active:scale-95">
+          Back to Home
+        </Link>
+      </div>
+    );
   }
 
   // Extract OMDB ratings
@@ -73,8 +84,8 @@ export default function MovieDetail() {
           
           {/* Poster */}
           <div className="flex-shrink-0 w-48 md:w-64 lg:w-80 group mx-auto lg:mx-0 -mt-20 lg:-mt-0">
-            <div className="glass-panel rounded-xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_20px_50px_rgba(132,94,194,0.3)] aspect-[2/3] relative">
-              <img src={posterUrl} alt={movie.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div className="glass-panel rounded-xl overflow-hidden shadow-2xl transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_20px_50px_rgba(132,94,194,0.3)] aspect-[2/3] relative">
+              <ImageWithFallback src={posterUrl} alt={movie.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" fallbackIndex={movie.id} />
               <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold border border-white/20">
                 <span className="text-brand-amber-yellow">★ {movie.vote_average?.toFixed(1)}</span>
               </div>
@@ -169,8 +180,43 @@ export default function MovieDetail() {
           
         </div>
 
+        {/* Top Cast Section */}
+        {movie.credits?.cast?.length > 0 && (
+          <div className="mt-16">
+            <h2 className="font-display text-2xl font-bold border-l-4 border-brand-coral-pink pl-4 mb-8 text-white">Top Cast</h2>
+            <div className="flex overflow-x-auto gap-6 pb-6 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-brand-deep-purple/50 [&::-webkit-scrollbar-track]:bg-white/5 scrollbar-thin">
+              {movie.credits.cast.slice(0, 10).map(actor => {
+                const actorProfileUrl = actor.profile_path 
+                  ? `https://image.tmdb.org/t/p/w185${actor.profile_path}` 
+                  : 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=185';
+                return (
+                  <Link 
+                    to={`/actor/${actor.id}`} 
+                    key={actor.id} 
+                    className="w-36 shrink-0 group hover:-translate-y-1.5 transition-all duration-300 block"
+                  >
+                    <div className="w-36 h-48 rounded-2xl overflow-hidden shadow-lg border border-white/5 relative bg-[#100d13] mb-3">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-end p-3">
+                        <span className="text-[10px] text-white/80 font-bold uppercase tracking-wider">View Profile</span>
+                      </div>
+                      <ImageWithFallback
+                        src={actorProfileUrl}
+                        alt={actor.name}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        fallbackIndex={actor.id}
+                      />
+                    </div>
+                    <h4 className="font-display text-sm font-bold text-white group-hover:text-brand-coral-pink transition-colors text-center truncate">{actor.name}</h4>
+                    <p className="font-body text-xs text-gray-400 text-center truncate">{actor.character}</p>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* User Actions */}
-        <div className="mt-10">
+        <div className="mt-16">
           <UserActions 
             mediaType="movie" 
             mediaId={id} 

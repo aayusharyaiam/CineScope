@@ -3,6 +3,8 @@ import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getAllUserMedia } from '../services/userMedia';
 import MovieCard from '../components/MovieCard';
+import ImageWithFallback from '../components/ImageWithFallback';
+import { ProfileSkeleton } from '../components/Skeleton';
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState('history');
@@ -63,7 +65,7 @@ export default function Profile() {
             <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-brand-deep-purple/20 to-transparent"></div>
             
             <div className="relative w-32 h-32 rounded-full p-1 bg-gradient-to-br from-brand-deep-purple via-brand-coral-pink to-brand-primary mb-4 z-10 shadow-[0_0_30px_rgba(132,94,194,0.4)]">
-              <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover border-4 border-white dark:border-[#211e25]" />
+              <ImageWithFallback src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover border-4 border-white dark:border-[#211e25]" />
             </div>
             
             <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-1 z-10">{user.name}</h1>
@@ -143,9 +145,7 @@ export default function Profile() {
           {/* Content Area */}
           <div className="flex flex-col gap-4 mt-2">
             {loading ? (
-              <div className="py-20 flex justify-center">
-                <div className="w-10 h-10 rounded-full border-4 border-brand-deep-purple/30 border-t-brand-deep-purple animate-spin"></div>
-              </div>
+              <ProfileSkeleton />
             ) : (
               <>
                 {activeTab === 'history' && (
@@ -161,7 +161,7 @@ export default function Profile() {
                         {watchedItems.map(item => (
                           <Link to={`/${item.mediaType === 'tv' ? 'show' : 'movie'}/${item.mediaId}`} key={item.id} className="glass-panel border-white/50 dark:border-white/5 rounded-xl p-4 flex gap-6 items-center group cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-[#37333a]/80">
                             <div className="w-16 h-24 bg-gray-200 dark:bg-[#2c292f] rounded-lg overflow-hidden flex-shrink-0 relative shadow-md">
-                              <img src={item.posterUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                              <ImageWithFallback src={item.posterUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             </div>
                             <div className="flex-grow">
                               <h3 className="font-display text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-brand-deep-purple dark:group-hover:text-brand-primary transition-colors">{item.title}</h3>
@@ -206,6 +206,7 @@ export default function Profile() {
                               rating={null}
                               imageUrl={item.posterUrl}
                               mediaType={item.mediaType}
+                              fluid={true}
                             />
                           </div>
                         ))}
@@ -226,7 +227,7 @@ export default function Profile() {
                         {reviewedItems.map(item => (
                           <Link to={`/${item.mediaType === 'tv' ? 'show' : 'movie'}/${item.mediaId}`} key={item.id} className="glass-panel border-white/50 dark:border-white/5 rounded-xl p-4 flex gap-6 items-center group cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-[#37333a]/80">
                             <div className="w-16 h-24 bg-gray-200 dark:bg-[#2c292f] rounded-lg overflow-hidden flex-shrink-0 relative shadow-md">
-                              <img src={item.posterUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                              <ImageWithFallback src={item.posterUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             </div>
                             <div className="flex-grow">
                               <h3 className="font-display text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-brand-deep-purple dark:group-hover:text-brand-primary transition-colors">{item.title}</h3>
@@ -270,6 +271,7 @@ export default function Profile() {
                               rating={item.rating > 0 ? item.rating : null}
                               imageUrl={item.posterUrl}
                               mediaType={item.mediaType}
+                              fluid={true}
                             />
                             <div className="absolute top-2 left-2 text-brand-coral-pink z-20">
                               <span className="material-symbols-outlined text-2xl drop-shadow-md" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>

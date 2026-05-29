@@ -186,6 +186,7 @@ export default function Search() {
                   genre=""
                   rating={movie.vote_average?.toFixed(1) || 'N/A'}
                   imageUrl={movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : movie.fallbackImage || 'https://via.placeholder.com/500x750?text=No+Poster'}
+                  fluid={true}
                 />
                 {movie.aiReason && (
                   <div className="absolute inset-x-0 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
@@ -203,8 +204,32 @@ export default function Search() {
         )}
         
         {!loading && results.length === 0 && !error && query && (
-          <div className="text-center py-20 text-gray-500">
-            No results found. Try a different search.
+          <div className="text-center py-16 text-gray-500 flex flex-col items-center justify-center">
+            <span className="material-symbols-outlined text-6xl text-gray-400/50 mb-4 animate-pulse">search_off</span>
+            <h3 className="font-display text-xl font-bold text-gray-900 dark:text-white mb-2">No standard results found</h3>
+            <p className="text-sm text-gray-400 mb-6 max-w-sm">We couldn't find any movies with the exact title matching "{query}".</p>
+            
+            {!isAiMode && query.trim().split(/\s+/).length > 2 && (
+              <div className="glass-panel p-8 rounded-3xl border border-brand-coral-pink/30 max-w-md shadow-2xl relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-brand-coral-pink/5 to-transparent opacity-100 pointer-events-none"></div>
+                <div className="relative z-10">
+                  <div className="flex items-center justify-center gap-2 text-brand-coral-pink font-extrabold uppercase text-xs tracking-widest mb-3">
+                    <span className="material-symbols-outlined text-[18px] animate-spin-slow">auto_awesome</span>
+                    CineBrain Recommendation
+                  </div>
+                  <h4 className="font-display text-lg font-bold text-gray-900 dark:text-white mb-2">Try CineBrain Magic!</h4>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
+                    It looks like you typed a descriptive mood query! Standard search only matches movie titles. Switch to **CineBrain Magic** to let our AI find matching recommendations.
+                  </p>
+                  <button 
+                    onClick={() => { setIsAiMode(true); executeSearch(query, true); }}
+                    className="bg-gradient-to-r from-brand-coral-pink to-brand-peach-orange text-white px-8 py-3 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(255,111,145,0.4)] transition-all transform active:scale-95 cursor-pointer"
+                  >
+                    Search with CineBrain
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

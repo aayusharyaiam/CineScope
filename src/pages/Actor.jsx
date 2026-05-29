@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { tmdbApi } from '../services/api';
 import MovieCard from '../components/MovieCard';
+import ImageWithFallback from '../components/ImageWithFallback';
+import { ActorDetailSkeleton } from '../components/Skeleton';
 
 export default function Actor() {
   const { id } = useParams();
@@ -20,19 +22,32 @@ export default function Actor() {
   }, [id]);
 
   if (loading) {
-    return <div className="text-center py-20 text-gray-900 dark:text-white font-display">Loading...</div>;
+    return <ActorDetailSkeleton />;
   }
 
   if (!actor || actor.error) {
-    return <div className="text-center py-20 text-gray-900 dark:text-white font-display">Actor profile unavailable.</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+        <span className="material-symbols-outlined text-6xl text-gray-400 mb-4">person_off</span>
+        <h2 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-2">Actor profile unavailable</h2>
+        <p className="text-gray-500 dark:text-gray-400 mb-6">We couldn't load this actor's information.</p>
+        <Link to="/actors" className="bg-gradient-to-r from-brand-deep-purple to-brand-coral-pink text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-[0_0_30px_rgba(132,94,194,0.4)] transition-all active:scale-95">
+          Browse Actors
+        </Link>
+      </div>
+    );
   }
 
-  // Combine movie and TV credits
-  const knownFor = [...(actor.movie_credits?.cast || []), ...(actor.tv_credits?.cast || [])]
+  // Combine movie and TV credits with explicit media_type mapping
+  const movieCredits = (actor.movie_credits?.cast || []).map(c => ({ ...c, media_type: 'movie' }));
+  const tvCredits = (actor.tv_credits?.cast || []).map(c => ({ ...c, media_type: 'tv' }));
+  const combinedCredits = [...movieCredits, ...tvCredits];
+
+  const knownFor = [...combinedCredits]
     .sort((a, b) => b.popularity - a.popularity)
     .slice(0, 8); // Top 8 known for
 
-  const filmography = [...(actor.movie_credits?.cast || []), ...(actor.tv_credits?.cast || [])]
+  const filmography = [...combinedCredits]
     .sort((a, b) => {
       const dateA = a.release_date || a.first_air_date || '';
       const dateB = b.release_date || b.first_air_date || '';
@@ -57,7 +72,7 @@ export default function Actor() {
           <div className="md:sticky md:top-28 glass-panel border-white/50 dark:border-white/5 rounded-[2rem] overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
             {/* Blurred Backdrop Image */}
             <div className="absolute inset-x-0 top-0 h-48 z-0">
-              <img src={profileImageUrl} className="w-full h-full object-cover opacity-30 mix-blend-overlay blur-sm" alt="Backdrop" />
+              <ImageWithFallback src={profileImageUrl} className="w-full h-full object-cover opacity-30 mix-blend-overlay blur-sm" alt="Backdrop" fallbackIndex={actor.id} />
               <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-white/80 to-white dark:from-transparent dark:via-[#211e25]/80 dark:to-[#211e25]"></div>
             </div>
 
@@ -65,7 +80,7 @@ export default function Actor() {
             <div className="relative z-10 px-8 pt-20 pb-8 flex flex-col items-center text-center">
               <div className="w-40 h-40 rounded-full border-4 border-white dark:border-[#211e25] p-1 shadow-2xl mb-6 relative group">
                 <div className="w-full h-full rounded-full overflow-hidden bg-gray-200 dark:bg-[#0a0a0f]">
-                  <img src={profileImageUrl} alt={actor.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <ImageWithFallback src={profileImageUrl} alt={actor.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" fallbackIndex={actor.id} />
                 </div>
                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-brand-deep-purple to-brand-coral-pink opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500 -z-10"></div>
               </div>
@@ -112,14 +127,16 @@ export default function Actor() {
             </div>
             
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {knownFor.map(credit => (
+              {knownFor.map((credit, idx) => (
                 <MovieCard 
-                  key={`${credit.media_type}-${credit.id}`}
+                  key={`${credit.media_type}-${credit.id}-${idx}`}
                   id={credit.id}
                   title={credit.title || credit.name}
                   year={credit.release_date?.substring(0, 4) || credit.first_air_date?.substring(0, 4)}
                   rating={credit.vote_average?.toFixed(1)}
                   imageUrl={credit.poster_path ? `https://image.tmdb.org/t/p/w500${credit.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Poster'}
+                  mediaType={credit.media_type}
+                  fluid={true}
                 />
               ))}
             </div>
@@ -136,7 +153,7 @@ export default function Actor() {
 
             <div className="flex flex-col gap-3">
               {filmography.slice(0, 10).map((credit, idx) => (
-                <Link to={`/movie/${credit.id}`} key={`${credit.media_type}-${credit.id}-${idx}`} className="group flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-gray-50/80 dark:bg-[#100d13]/50 border border-gray-200 dark:border-white/5 hover:bg-white dark:hover:bg-[#211e25]/80 hover:border-gray-300 dark:hover:border-white/10 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden backdrop-blur-sm">
+                <Link to={credit.media_type === 'tv' ? `/show/${credit.id}` : `/movie/${credit.id}`} key={`${credit.media_type}-${credit.id}-${idx}`} className="group flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl bg-gray-50/80 dark:bg-[#100d13]/50 border border-gray-200 dark:border-white/5 hover:bg-white dark:hover:bg-[#211e25]/80 hover:border-gray-300 dark:hover:border-white/10 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden backdrop-blur-sm">
                   <div className="absolute inset-0 bg-gradient-to-r from-brand-deep-purple/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                   
                   <div className="flex items-center gap-6 relative z-10">

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { tmdbApi, omdbApi } from '../services/api';
 import UserActions from '../components/UserActions';
+import ImageWithFallback from '../components/ImageWithFallback';
+import { DetailSkeleton } from '../components/Skeleton';
 
 export default function ShowDetail() {
   const { id } = useParams();
@@ -37,15 +39,20 @@ export default function ShowDetail() {
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="w-12 h-12 rounded-full border-4 border-brand-coral-pink/30 border-t-brand-coral-pink animate-spin"></div>
-      </div>
-    );
+    return <DetailSkeleton />;
   }
 
   if (!show) {
-    return <div className="text-center py-20 text-white font-display">Show not found.</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+        <span className="material-symbols-outlined text-6xl text-brand-coral-pink/60 mb-4">search_off</span>
+        <h2 className="font-display text-2xl font-bold text-white mb-2">Show not found</h2>
+        <p className="text-gray-400 mb-6">We couldn't find the show you're looking for.</p>
+        <Link to="/" className="bg-gradient-to-r from-brand-deep-purple to-brand-coral-pink text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-[0_0_30px_rgba(132,94,194,0.4)] transition-all active:scale-95">
+          Back to Home
+        </Link>
+      </div>
+    );
   }
 
   const imdbRating = omdbData?.imdbRating || show.vote_average?.toFixed(1);
@@ -86,8 +93,8 @@ export default function ShowDetail() {
           
           {/* Poster */}
           <div className="flex-shrink-0 w-48 md:w-64 lg:w-80 group mx-auto lg:mx-0 -mt-20 lg:-mt-0">
-            <div className="glass-panel rounded-xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_20px_50px_rgba(132,94,194,0.3)] aspect-[2/3] relative">
-              <img src={posterUrl} alt={show.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div className="glass-panel rounded-xl overflow-hidden shadow-2xl transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_20px_50px_rgba(132,94,194,0.3)] aspect-[2/3] relative">
+              <ImageWithFallback src={posterUrl} alt={show.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" fallbackIndex={show.id} />
               <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold border border-white/20">
                 <span className="text-brand-amber-yellow">★ {show.vote_average?.toFixed(1)}</span>
               </div>
@@ -170,17 +177,18 @@ export default function ShowDetail() {
             <h2 className="font-display text-2xl font-bold border-l-4 border-brand-coral-pink pl-4 mb-6">Top Cast</h2>
             <div className="space-y-3">
               {show.credits?.cast?.slice(0, 5).map(actor => (
-                <div key={actor.id} className="glass-panel rounded-lg p-3 flex items-center gap-3 hover:-translate-y-0.5 transition-transform">
-                  <img 
-                    src={actor.profile_path ? `https://image.tmdb.org/t/p/w92${actor.profile_path}` : 'https://via.placeholder.com/92x138?text=?'} 
-                    alt={actor.name} 
+                <Link to={`/actor/${actor.id}`} key={actor.id} className="glass-panel rounded-lg p-3 flex items-center gap-3 hover:-translate-y-0.5 transition-transform block hover:bg-brand-deep-purple/10 cursor-pointer">
+                  <ImageWithFallback
+                    src={actor.profile_path ? `https://image.tmdb.org/t/p/w92${actor.profile_path}` : 'https://via.placeholder.com/92x138?text=?'}
+                    alt={actor.name}
                     className="w-10 h-10 rounded-full object-cover"
+                    fallbackIndex={actor.id}
                   />
                   <div>
-                    <p className="text-sm font-bold text-white">{actor.name}</p>
+                    <p className="text-sm font-bold text-white group-hover:text-brand-primary">{actor.name}</p>
                     <p className="text-xs text-gray-400">{actor.character}</p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

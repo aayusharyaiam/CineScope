@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import ImageWithFallback from './ImageWithFallback';
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
@@ -12,6 +13,7 @@ export default function Navbar() {
   const [tvDropdownOpen, setTvDropdownOpen] = useState(false);
   const [mobileTvOpen, setMobileTvOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [ripple, setRipple] = useState({ active: false, x: 0, y: 0 });
 
   // Close mobile menu on navigation
   useEffect(() => {
@@ -39,17 +41,23 @@ export default function Navbar() {
     }
   };
 
+  const handleRipple = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setRipple({ active: true, x: e.clientX - rect.left, y: e.clientY - rect.top });
+    setTimeout(() => setRipple({ active: false, x: 0, y: 0 }), 600);
+  };
+
   const linkBase = "text-gray-600 dark:text-gray-300 hover:text-brand-deep-purple dark:hover:text-white transition-colors font-body";
 
   return (
     <>
-      <nav className="bg-white/80 dark:bg-[#151218]/80 backdrop-blur-xl border-b border-black/10 dark:border-white/10 shadow-2xl fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-20 h-16 md:h-20 transition-colors duration-300">
+      <nav className="bg-white/80 dark:bg-[#151218]/80 backdrop-blur-xl border-b border-black/10 dark:border-white/10 shadow-2xl fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-8 lg:px-20 h-16 md:h-20 transition-colors duration-300">
         <Link to="/" className="font-display text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-deep-purple to-brand-coral-pink">
           CineScope
         </Link>
         
         {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-4 lg:gap-8">
           <Link to="/" className={linkBase}>Movies</Link>
           
           {/* TV Shows with dropdown */}
@@ -99,7 +107,7 @@ export default function Navbar() {
               <Link to="/profile" className="flex items-center gap-2 text-gray-900 dark:text-white hover:text-brand-deep-purple dark:hover:text-brand-coral-pink transition-colors font-semibold text-sm">
                 <div className="w-8 h-8 rounded-full bg-brand-deep-purple/20 flex items-center justify-center overflow-hidden border border-brand-primary/30">
                   {currentUser.photoURL ? (
-                    <img src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                    <ImageWithFallback src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <span className="material-symbols-outlined text-[18px] text-brand-deep-purple dark:text-brand-primary">person</span>
                   )}
@@ -113,7 +121,12 @@ export default function Navbar() {
           ) : (
             <>
               <Link to="/auth" className="text-gray-900 dark:text-white hover:text-brand-deep-purple dark:hover:text-brand-coral-pink transition-colors font-semibold text-sm">Login</Link>
-              <Link to="/auth" className="bg-gradient-to-r from-brand-deep-purple to-brand-coral-pink text-white px-5 py-2 rounded-full font-semibold text-sm shadow-[0_0_15px_rgba(255,111,145,0.4)] hover:shadow-[0_0_25px_rgba(255,111,145,0.6)] transition-all">Sign Up</Link>
+              <Link to="/auth" onClick={handleRipple} className="bg-gradient-to-r from-brand-deep-purple to-brand-coral-pink text-white px-5 py-2 rounded-full font-semibold text-sm shadow-[0_0_15px_rgba(255,111,145,0.4)] hover:shadow-[0_0_25px_rgba(255,111,145,0.6)] transition-all relative overflow-hidden">
+                Sign Up
+                {ripple.active && (
+                  <span className="absolute rounded-full bg-white/30 animate-ping" style={{ left: ripple.x - 10, top: ripple.y - 10, width: 20, height: 20 }} />
+                )}
+              </Link>
             </>
           )}
         </div>
@@ -181,7 +194,7 @@ export default function Navbar() {
                   <Link to="/profile" className="px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-brand-deep-purple/10 font-body font-semibold transition-colors flex items-center gap-3">
                     <div className="w-7 h-7 rounded-full bg-brand-deep-purple/20 flex items-center justify-center overflow-hidden border border-brand-primary/30">
                       {currentUser.photoURL ? (
-                        <img src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                        <ImageWithFallback src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
                         <span className="material-symbols-outlined text-[16px] text-brand-deep-purple dark:text-brand-primary">person</span>
                       )}

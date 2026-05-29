@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import MovieCard from '../components/MovieCard';
+import ImageWithFallback from '../components/ImageWithFallback';
 import { tmdbApi, getPickOfTheDay } from '../services/api';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -94,9 +95,9 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative h-125 md:h-150 flex items-center justify-center overflow-hidden rounded-3xl mx-4 mt-4 md:mt-0 shadow-2xl">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1600" 
-            alt="Hero background" 
+          <ImageWithFallback
+            src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1600"
+            alt="Hero background"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-linear-to-r from-brand-deep-purple/80 via-brand-coral-pink/60 to-brand-amber-yellow/60 mix-blend-multiply"></div>
@@ -177,9 +178,9 @@ export default function Home() {
             <div className="flex flex-col md:flex-row">
               {/* Poster */}
               <div className="w-full md:w-70 shrink-0">
-                <img 
-                  src={pickOfDay.poster} 
-                  alt={pickOfDay.title} 
+                <ImageWithFallback
+                  src={pickOfDay.poster}
+                  alt={pickOfDay.title}
                   className="w-full h-100 md:h-full object-cover"
                 />
               </div>
@@ -243,9 +244,9 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-auto md:h-150">
           {/* Main Feature */}
           <div className="md:col-span-2 relative rounded-2xl overflow-hidden group cursor-pointer h-100 md:h-full shadow-xl">
-            <img 
-              src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=1200" 
-              alt="Main Movie" 
+            <ImageWithFallback
+              src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=1200"
+              alt="Main Movie"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent"></div>
@@ -262,9 +263,9 @@ export default function Home() {
           {/* Side Stack */}
           <div className="flex flex-col gap-6 h-full">
             <div className="relative rounded-2xl overflow-hidden group cursor-pointer flex-1 h-62.5 md:h-auto shadow-xl">
-              <img 
-                src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&q=80&w=800" 
-                alt="Side Movie 1" 
+              <ImageWithFallback
+                src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&q=80&w=800"
+                alt="Side Movie 1"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent"></div>
@@ -277,9 +278,9 @@ export default function Home() {
             </div>
             
             <div className="relative rounded-2xl overflow-hidden group cursor-pointer flex-1 h-62.5 md:h-auto shadow-xl">
-              <img 
-                src="https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?auto=format&fit=crop&q=80&w=800" 
-                alt="Side Movie 2" 
+              <ImageWithFallback
+                src="https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?auto=format&fit=crop&q=80&w=800"
+                alt="Side Movie 2"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent"></div>

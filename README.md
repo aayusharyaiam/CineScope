@@ -1,91 +1,81 @@
-# CineScope 🎬
+# CineScope
 
-CineScope is a modern, immersive web application designed for movie and TV show enthusiasts. It provides a rich interface to discover trending media, explore detailed information about titles and actors, and build a personalized, gamified profile tracking your cinematic journey.
+A modern, glassmorphic cinematic discovery dashboard. Browse trending movies & TV shows, get AI-curated recommendations, track your watch history, and build a gamified profile.
 
-## ✨ Key Features
+## Features
 
-### 🎨 Stunning, Modern UI
-- **Rich Aesthetics**: Built with TailwindCSS utilizing a custom color palette, glassmorphism panels, and smooth background gradients.
-- **Micro-Animations**: Uses GSAP (GreenSock) for high-performance entrance animations, hover states, and dynamic routing transitions.
-- **Responsive Layout**: Seamlessly adapts from mobile devices to ultra-wide desktop monitors.
+- **Pick of the Day** — AI-curated daily movie recommendation, cached in Firestore
+- **CineBrain Magic Search** — Natural-language AI movie search via NVIDIA NIM (`minimaxai/m2.7`)
+- **Critical Consensus** — Aggregated ratings from IMDb, Rotten Tomatoes, Metacritic
+- **Personal Library** — Watchlist, watched history, favorites, 5-star ratings
+- **Gamified Profile** — XP levels, stats tracking, tabbed dashboard
+- **Interactive Cast** — Horizontal carousels with actor profile links
+- **Live Actor Search** — Debounced global TMDB search (300ms)
+- **Dark/Light Theme** — Persisted to localStorage
+- **Glassmorphism UI** — Custom Tailwind v4 theme with backdrop blur panels
 
-### 🔍 Media Discovery & Details
-- Browse trending, top-rated, and newly released movies and TV shows.
-- **Explore by Genre**: Filter movies by genre using interactive genre pills that dynamically fetch and display popular titles.
-- Explore dedicated pages for media details, including cast overviews, trailers, and similar recommendations.
-- **Critical Consensus**: Aggregates ratings from IMDb, Rotten Tomatoes, and Metacritic (powered by OMDB).
-- **Intelligent API Proxying**: Built-in fallback proxies for the TMDB API to automatically bypass regional ISP blocks and ensure a seamless experience.
+## Tech Stack
 
-### 👤 User Authentication & Profiles
-- Secure Sign-up, Login, and Google OAuth provided by Firebase Authentication.
-- **Gamified Tracking**: Earn Experience Points (XP) and level up your profile as you watch more titles and write reviews.
-- **Dynamic Stats**: Automatically calculates your total titles watched, estimated hours spent watching, and total reviews.
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, Vite 8, React Router 7 |
+| Styling | Tailwind CSS v4, GSAP 3 |
+| Auth & DB | Firebase Authentication, Firestore (multi-tab persistent cache) |
+| APIs | TMDB (primary metadata), OMDB (ratings), NVIDIA NIM (AI recommendations) |
 
-### 📚 Personal Library Management
-- **Watchlist**: Keep track of what you want to watch next.
-- **Watched History**: Mark titles as seen and rate them out of 5 stars.
-- **Favorites**: Add a "Heart" to your top titles and display them in a dedicated grid on your profile.
-- **Offline Persistence**: Leveraging Firebase Firestore local caching so your profile loads instantly, even on unstable connections, and syncs automatically in the background.
+## Architecture Highlights
 
----
+- **TMDB ISP Resilience** — Attempts direct fetch, falls back to a Vercel serverless proxy (`/api/tmdb`), then public CORS proxies, then AI-generated fallback data
+- **NVIDIA NIM Proxy** — In production, AI calls go through a Vercel serverless function (`/api/nvidia`) to avoid CORS and keep API keys server-side
+- **Daily Caching** — Pick of the Day and dynamic fallback lists are cached in Firestore and served instantly on repeat visits
+- **Optimistic UI** — Watchlist/favorite/rating updates apply immediately with background Firestore sync
 
-## 🛠️ Tech Stack
+## Project Structure
 
-- **Frontend Framework**: React 19 + Vite
-- **Routing**: React Router DOM (v7)
-- **Styling**: Tailwind CSS (v4)
-- **Animations**: GSAP (GreenSock Animation Platform)
-- **Backend / Database**: Firebase (Auth & Firestore)
-- **External APIs**: 
-  - [TMDB API](https://developer.themoviedb.org/reference/intro/getting-started) (Primary media data)
-  - [OMDB API](https://www.omdbapi.com/) (Auxiliary rating data)
+```
+src/
+├── components/    # Reusable UI (Navbar, MovieCard, Skeleton, Toast, etc.)
+├── pages/         # Route views (Home, MovieDetail, Profile, Search, etc.)
+├── services/      # API clients (api.js) and Firestore CRUD (userMedia.js)
+├── context/       # React context providers (AuthContext, ThemeContext)
+├── firebase.js    # Firebase init with multi-tab persistence
+├── App.jsx        # Root routing + layout
+└── main.jsx       # Entry point (wraps app in ToastProvider)
 
----
+api/               # Vercel serverless functions
+├── nvidia.mjs     # Proxies NVIDIA NIM API calls server-side
+└── tmdb.mjs       # Proxies TMDB API calls server-side
+```
 
-## 🚀 Getting Started
+## Getting Started
 
-### Prerequisites
-Make sure you have [Node.js](https://nodejs.org/) installed on your machine.
+```bash
+npm install
+npm run dev
+```
 
-### Installation
+Open `http://localhost:5173`.
 
-1. **Clone the repository** (if you haven't already):
-   ```bash
-   git clone https://github.com/aayusharyaiam/CineScope.git
-   cd CineScope
-   ```
+### Environment Variables
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+Copy your `.env` with the following keys:
 
-3. **Set up Environment Variables**:
-   Create a `.env` file in the root directory and add your API keys and Firebase configuration. You will need keys from TMDB, OMDB, and a Firebase project.
-   
-   ```env
-   VITE_TMDB_API_KEY=your_tmdb_api_key
-   VITE_OMDB_API_KEY=your_omdb_api_key
-   ```
-   *(Note: The Firebase configuration is currently handled directly in `src/firebase.js`. For a production deployment, ensure you restrict your Firebase and API keys appropriately).*
+| Variable | Source |
+|----------|--------|
+| `VITE_TMDB_API_KEY` | [TMDB](https://developer.themoviedb.org/reference/intro/getting-started) |
+| `VITE_OMDB_API_KEY` | [OMDB](https://www.omdbapi.com/) |
+| `VITE_NVIDIA_API_KEY` | [NVIDIA NIM](https://build.nvidia.com/) |
+| `VITE_FIREBASE_*` | [Firebase Console](https://console.firebase.google.com/) |
 
-4. **Run the Development Server**:
-   ```bash
-   npm run dev
-   ```
+## Deployment (Vercel)
 
-5. Open your browser and navigate to `http://localhost:5173` (or the port Vite provides).
+```bash
+npm run build    # Outputs to dist/
+```
 
----
+1. Push to GitHub
+2. Import repo in Vercel
+3. Add all `VITE_*` env vars in Vercel Dashboard → Settings → Environment Variables
+4. Deploy — `api/tmdb.mjs` and `api/nvidia.mjs` are auto-detected as serverless functions
 
-## 🏗️ Project Structure
-
-- `/src/components/` - Reusable UI elements (Navbar, MovieCard, UserActions, etc.)
-- `/src/pages/` - Main route views (Home, MovieDetail, Profile, etc.)
-- `/src/services/` - External API handlers (`api.js`) and database interactions (`userMedia.js`)
-- `/src/context/` - React Context providers (`AuthContext`, `ThemeContext`)
-
----
-
-## 🤝 Contributing
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/aayusharyaiam/CineScope/issues).
+The serverless proxies bypass regional ISP blocks (e.g. TMDB blocked in India) by routing requests through Vercel's infrastructure.
