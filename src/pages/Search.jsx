@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { tmdbApi, geminiApi, GENRE_MAP } from '../services/api';
 import MovieCard from '../components/MovieCard';
+import { CardSkeleton } from '../components/Skeleton';
 
 export default function Search() {
   const [searchParams] = useSearchParams();
@@ -11,15 +12,31 @@ export default function Search() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeGenre, setActiveGenre] = useState(null);
+  const loadingStartRef = useRef(0);
+  const MIN_LOADING_MS = 400;
+
+  const withMinLoading = async (fn) => {
+    loadingStartRef.current = Date.now();
+    setLoading(true);
+    try {
+      await fn();
+    } finally {
+      const elapsed = Date.now() - loadingStartRef.current;
+      const remaining = MIN_LOADING_MS - elapsed;
+      if (remaining > 0) {
+        await new Promise(r => setTimeout(r, remaining));
+      }
+      setLoading(false);
+    }
+  };
 
   const executeSearch = useCallback(async (searchQuery, aiMode) => {
     if (!searchQuery.trim()) return;
-    setLoading(true);
     setError(null);
     setResults([]);
     setActiveGenre(null);
 
-    try {
+    await withMinLoading(async () => {
       if (aiMode) {
         const aiRecommendations = await geminiApi.getRecommendations(searchQuery);
         if (aiRecommendations.length > 0) {
@@ -41,34 +58,23 @@ export default function Search() {
           setResults(data.results);
         }
       }
-    } catch (err) {
-      console.error(err);
-      setError("An error occurred during search.");
-    } finally {
-      setLoading(false);
-    }
+    });
   }, []);
 
   const executeGenreSearch = useCallback(async (genreName) => {
     const genreId = GENRE_MAP[genreName];
     if (!genreId) return;
-    setLoading(true);
     setError(null);
     setResults([]);
     setActiveGenre(genreName);
     setQuery('');
 
-    try {
+    await withMinLoading(async () => {
       const data = await tmdbApi.discoverByGenre(genreId);
       if (data.results) {
         setResults(data.results);
       }
-    } catch (err) {
-      console.error(err);
-      setError("Failed to discover movies for this genre.");
-    } finally {
-      setLoading(false);
-    }
+    });
   }, []);
 
   // Auto-search when coming from Home page with ?q= or ?genre= param
@@ -170,11 +176,7 @@ export default function Search() {
         {error && <p className="text-center text-brand-error mb-8">{error}</p>}
         
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 animate-pulse">
-            {[...Array(10)].map((_, i) => (
-              <div key={i} className="aspect-2/3 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
-            ))}
-          </div>
+          <CardSkeleton count={10} fluid={true} />
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {results.map(movie => (
