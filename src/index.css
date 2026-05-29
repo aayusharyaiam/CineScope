@@ -54,3 +54,12 @@ html {
     transition-duration: 0.01ms !important;
   }
 }
+
+@keyframes skeleton-fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.skeleton-wrapper {
+  animation: skeleton-fade-in 0.35s ease-out forwards;
+}

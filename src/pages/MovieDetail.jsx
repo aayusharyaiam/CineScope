@@ -183,8 +183,18 @@ export default function MovieDetail() {
         {/* Top Cast Section */}
         {movie.credits?.cast?.length > 0 && (
           <div className="mt-16">
-            <h2 className="font-display text-2xl font-bold border-l-4 border-brand-coral-pink pl-4 mb-8 text-white">Top Cast</h2>
-            <div className="flex overflow-x-auto gap-6 pb-6 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-brand-deep-purple/50 [&::-webkit-scrollbar-track]:bg-white/5 scrollbar-thin">
+            <div className="flex items-end justify-between mb-8">
+              <h2 className="font-display text-2xl font-bold border-l-4 border-brand-coral-pink pl-4 text-white">Top Cast</h2>
+              <div className="hidden md:flex gap-2">
+                <button onClick={() => { const el = document.getElementById('cast-scroll'); if (el) el.scrollBy({ left: -320, behavior: 'smooth' }); }} className="glass-panel w-10 h-10 rounded-full flex items-center justify-center hover:bg-brand-deep-purple hover:text-white transition-colors">
+                  <span className="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button onClick={() => { const el = document.getElementById('cast-scroll'); if (el) el.scrollBy({ left: 320, behavior: 'smooth' }); }} className="glass-panel w-10 h-10 rounded-full flex items-center justify-center hover:bg-brand-deep-purple hover:text-white transition-colors">
+                  <span className="material-symbols-outlined">chevron_right</span>
+                </button>
+              </div>
+            </div>
+            <div id="cast-scroll" className="flex overflow-x-auto gap-6 pb-6 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none]">
               {movie.credits.cast.slice(0, 10).map(actor => {
                 const actorProfileUrl = actor.profile_path 
                   ? `https://image.tmdb.org/t/p/w185${actor.profile_path}` 
